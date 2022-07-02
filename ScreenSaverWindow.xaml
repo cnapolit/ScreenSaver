@@ -1,0 +1,31 @@
+﻿<Window x:Class="ScreenSaver.ScreenSaverWindow"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:local="clr-namespace:ScreenSaver"
+             mc:Ignorable="d"
+             WindowState="Maximized" WindowStyle="None" ContentElement.MouseLeftButtonDown="Close">
+    <Grid>
+        <Grid.Background>
+            <VisualBrush Stretch="UniformToFill">
+                <VisualBrush.Visual>
+                    <StackPanel Background="Black">
+                        <MediaElement x:Name="Background" Source="C:\Users\PC-4357\AppData\Roaming\Playnite\library\files\069a1773-8710-4082-aeaa-334d90c1254b\1e4b4dd7-50bb-4f12-b2d6-dddc8ef67608.jpg" LoadedBehavior="Manual" UnloadedBehavior="Manual" MediaEnded="Video_OnMediaEnded" IsMuted="True"></MediaElement>
+                    </StackPanel>
+                </VisualBrush.Visual>
+            </VisualBrush>
+        </Grid.Background>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width=".5*"/>
+            <ColumnDefinition Width=".5*"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height=".5*"/>
+            <RowDefinition Height=".5*"/>
+        </Grid.RowDefinitions>
+        <MediaElement Name="video" Grid.Row="1" Grid.Column="0" Source="C:\Users\PC-4357\AppData\Roaming\Playnite\ExtraMetadata\games\069a1773-8710-4082-aeaa-334d90c1254b\VideoTrailer.mp4" LoadedBehavior="Manual" UnloadedBehavior="Manual" MediaEnded="Video_OnMediaEnded" IsMuted="True" Margin="60"/>
+        <Image Grid.Row="0" Grid.Column="0" Source="C:\Users\PC-4357\AppData\Roaming\Playnite\ExtraMetadata\games\069a1773-8710-4082-aeaa-334d90c1254b\Logo.png" Margin="200"/>
+        <MediaElement Name="music" Source="C:\Users\PC-4357\AppData\Roaming\Playnite\ExtensionsData\9c960604-b8bc-4407-a4e4-e291c6097c7d\Music Files\069a1773-8710-4082-aeaa-334d90c1254b\Character Creation Theme.mp3" LoadedBehavior="Manual" UnloadedBehavior="Play" MediaEnded="Music_OnMediaEnded"/>
+    </Grid>
+</Window>

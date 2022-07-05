@@ -11,7 +11,7 @@
             <VisualBrush Stretch="UniformToFill">
                 <VisualBrush.Visual>
                     <StackPanel Background="Black">
-                        <MediaElement x:Name="Background" Source="C:\Users\PC-4357\AppData\Roaming\Playnite\library\files\069a1773-8710-4082-aeaa-334d90c1254b\1e4b4dd7-50bb-4f12-b2d6-dddc8ef67608.jpg" LoadedBehavior="Manual" UnloadedBehavior="Manual" MediaEnded="Video_OnMediaEnded" IsMuted="True"></MediaElement>
+                        <MediaElement x:Name="Background" Source="C:\Users\bandg\OneDrive\Documents\Playnite\library\files\91c0f6c1-cb50-40af-8ee2-322edd7573e1\ef091d4d-d244-4e6b-b08d-6dba08285e68.jpg" UnloadedBehavior="Manual" MediaEnded="Video_OnMediaEnded"></MediaElement>
                     </StackPanel>
                 </VisualBrush.Visual>
             </VisualBrush>
@@ -24,8 +24,8 @@
             <RowDefinition Height=".5*"/>
             <RowDefinition Height=".5*"/>
         </Grid.RowDefinitions>
-        <MediaElement Name="video" Grid.Row="1" Grid.Column="0" Source="C:\Users\PC-4357\AppData\Roaming\Playnite\ExtraMetadata\games\069a1773-8710-4082-aeaa-334d90c1254b\VideoTrailer.mp4" LoadedBehavior="Manual" UnloadedBehavior="Manual" MediaEnded="Video_OnMediaEnded" IsMuted="True" Margin="60"/>
-        <Image Grid.Row="0" Grid.Column="0" Source="C:\Users\PC-4357\AppData\Roaming\Playnite\ExtraMetadata\games\069a1773-8710-4082-aeaa-334d90c1254b\Logo.png" Margin="200"/>
-        <MediaElement Name="music" Source="C:\Users\PC-4357\AppData\Roaming\Playnite\ExtensionsData\9c960604-b8bc-4407-a4e4-e291c6097c7d\Music Files\069a1773-8710-4082-aeaa-334d90c1254b\Character Creation Theme.mp3" LoadedBehavior="Manual" UnloadedBehavior="Play" MediaEnded="Music_OnMediaEnded"/>
+        <MediaElement Name="video" Grid.Row="1" Grid.Column="0" Source="C:\Users\bandg\OneDrive\Documents\Playnite\ExtraMetadata\games\91c0f6c1-cb50-40af-8ee2-322edd7573e1\VideoTrailer.mp4" LoadedBehavior="Play" UnloadedBehavior="Manual" MediaEnded="Video_OnMediaEnded" IsMuted="True" Margin="60"/>
+        <Image Grid.Row="0" Grid.Column="0" Source="C:\Users\bandg\OneDrive\Documents\Playnite\ExtraMetadata\games\91c0f6c1-cb50-40af-8ee2-322edd7573e1\Logo.png" Margin="200"/>
+        <MediaElement Name="music" Source="C:\Users\bandg\OneDrive\Documents\Playnite\ExtensionsData\9c960604-b8bc-4407-a4e4-e291c6097c7d\Music Files\Game\91c0f6c1-cb50-40af-8ee2-322edd7573e1\Character Creation.mp3" LoadedBehavior="Manual" UnloadedBehavior="Play" MediaEnded="Music_OnMediaEnded"/>
     </Grid>
 </Window>

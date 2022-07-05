@@ -1,0 +1,9 @@
+﻿################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################
+
+/.vs/ScreenSaver
+/bin/Debug
+/obj/Debug
+/packages/PlayniteSDK.6.2.2
+/ScreenSaver.csproj.user

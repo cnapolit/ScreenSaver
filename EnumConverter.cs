@@ -1,5 +1,4 @@
-﻿
-using System;
+﻿using System;
 using System.Globalization;
 using System.Windows.Data;
 using System.Windows.Markup;
@@ -13,6 +12,12 @@ namespace ScreenSaver
         public override object Convert(object value, Type targetType, object parameter, CultureInfo culture) => (int)value;
 
         public override object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) => (AudioSource)value;
+    }
+    public class PlayStateConverter : BaseValueConverter<PlayStateConverter>
+    {
+        public override object Convert(object value, Type targetType, object parameter, CultureInfo culture) => (int)value;
+
+        public override object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) => (PlayState)value;
     }
 
     public class TimeSpanConverter : IValueConverter

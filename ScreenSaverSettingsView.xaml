@@ -36,6 +36,8 @@
                     <RowDefinition/>
                     <RowDefinition Height="5"/>
                     <RowDefinition/>
+                    <RowDefinition Height="5"/>
+                    <RowDefinition/>
                 </Grid.RowDefinitions>
                 <StackPanel Grid.Row="0" Orientation="Horizontal">
                     <Label Name="LblMusicVolume" Content="Audio Volume" d:LayoutOverrides="VerticalAlignment"/>
@@ -44,23 +46,30 @@
                     <Label Name="PercentageSign" Content="%"/>
                 </StackPanel>
                 <Slider   Grid.Row="0" Grid.Column="1" Name="VolumeSlider" Maximum="100" Value="{Binding Settings.Volume}"  AutoToolTipPlacement="TopLeft" VerticalAlignment="Center"/>
-                <Label    Grid.Row="2"                 Name="AudioStateLabel" Content="Audio To Play" d:LayoutOverrides="VerticalAlignment"/>
+                <Label    Grid.Row="2"                 Name="AudioSourceLabel" Content="Audio To Play" d:LayoutOverrides="VerticalAlignment"/>
                 <ComboBox Grid.Row="2" Grid.Column="1" Name="AudioSourceCombo" SelectedIndex="{Binding Settings.AudioSource, Converter={s:AudioSourceConverter}}" Height="20">
                     <ComboBoxItem Content="None"/>
                     <ComboBoxItem Content="Video"/>
                     <ComboBoxItem Content="Music"/>
                 </ComboBox>
-                <Label     Grid.Row="4"  Grid.Column="0"       Name="GameTransLabel"   Content="Time Between Transitions in Seconds: "/>
-                <s:UIntDUp Grid.Row="4"  Grid.Column="1"     x:Name="GameTransUpDown"   Width="40" Value="{Binding Settings.GameTransitionInterval}"/>
-                <Label     Grid.Row="6"  Grid.Column="0"       Name="ScreenSaverLabel" Content="Time for ScreenSaver to Appear in Seconds: "/>
-                <s:UIntDUp Grid.Row="6"  Grid.Column="1"     x:Name="ScreenSaverUpDown" Width="40" Value="{Binding Settings.ScreenSaverInterval}"/>
-                <CheckBox  Grid.Row="8"  Grid.ColumnSpan="2"   Name="CheckBackgroundSkip" IsChecked="{Binding Settings.BackgroundSkip}"      Content="Skip Games Missing a Background"/>
-                <CheckBox  Grid.Row="10" Grid.ColumnSpan="2"   Name="CheckVideoSkip"      IsChecked="{Binding Settings.VideoSkip}"           Content="Skip Games Missing Video"/>
-                <CheckBox  Grid.Row="12" Grid.ColumnSpan="2"   Name="CheckMusicSkip"      IsChecked="{Binding Settings.MusicSkip}"           Content="Skip Games Missing Music"/>
-                <CheckBox  Grid.Row="14" Grid.ColumnSpan="2"   Name="CheckLogoSkip"       IsChecked="{Binding Settings.LogoSkip}"            Content="Skip Games Missing Logos"/>
-                <CheckBox  Grid.Row="16" Grid.ColumnSpan="2"   Name="CheckPlayBackup"     IsChecked="{Binding Settings.PlayBackup}"          Content="Play backup music if selected is missing"/>
-                <CheckBox  Grid.Row="18" Grid.ColumnSpan="2"   Name="CheckDisablePlay"    IsChecked="{Binding Settings.DisableWhilePlaying}" Content="Disable ScreenSaver while Playing"/>
-                <CheckBox  Grid.Row="20" Grid.ColumnSpan="2"   Name="CheckDisablePoll"    IsChecked="{Binding Settings.DisablePoll}"         Content="Disable ScreenSaver from appearing automatically"/>
+                <Label    Grid.Row="4"                 Name="PlayStateLabel" Content="Audio To Play" d:LayoutOverrides="VerticalAlignment"/>
+                <ComboBox Grid.Row="4" Grid.Column="1" Name="PlayStateCombo" SelectedIndex="{Binding Settings.PlayState, Converter={s:PlayStateConverter}}" Height="20">
+                    <ComboBoxItem Content="Never"/>
+                    <ComboBoxItem Content="Desktop"/>
+                    <ComboBoxItem Content="FullScreen"/>
+                    <ComboBoxItem Content="Always"/>
+                </ComboBox>
+                <Label     Grid.Row="6"  Grid.Column="0"       Name="GameTransLabel"   Content="Time Between Transitions in Seconds: "/>
+                <s:UIntDUp Grid.Row="6"  Grid.Column="1"     x:Name="GameTransUpDown"   Width="40" Value="{Binding Settings.GameTransitionInterval}"/>
+                <Label     Grid.Row="8"  Grid.Column="0"       Name="ScreenSaverLabel" Content="Time for ScreenSaver to Appear in Seconds: "/>
+                <s:UIntDUp Grid.Row="8"  Grid.Column="1"     x:Name="ScreenSaverUpDown" Width="40" Value="{Binding Settings.ScreenSaverInterval}"/>
+                <CheckBox  Grid.Row="10" Grid.ColumnSpan="2"   Name="CheckBackgroundSkip" IsChecked="{Binding Settings.BackgroundSkip}"      Content="Skip Games Missing a Background"/>
+                <CheckBox  Grid.Row="12" Grid.ColumnSpan="2"   Name="CheckVideoSkip"      IsChecked="{Binding Settings.VideoSkip}"           Content="Skip Games Missing Video"/>
+                <CheckBox  Grid.Row="14" Grid.ColumnSpan="2"   Name="CheckMusicSkip"      IsChecked="{Binding Settings.MusicSkip}"           Content="Skip Games Missing Music"/>
+                <CheckBox  Grid.Row="16" Grid.ColumnSpan="2"   Name="CheckLogoSkip"       IsChecked="{Binding Settings.LogoSkip}"            Content="Skip Games Missing Logos"/>
+                <CheckBox  Grid.Row="18" Grid.ColumnSpan="2"   Name="CheckPlayBackup"     IsChecked="{Binding Settings.PlayBackup}"          Content="Play backup music if selected is missing"/>
+                <CheckBox  Grid.Row="20" Grid.ColumnSpan="2"   Name="CheckDisablePlay"    IsChecked="{Binding Settings.DisableWhilePlaying}" Content="Disable ScreenSaver while Playing"/>
+                <CheckBox  Grid.Row="22" Grid.ColumnSpan="2"   Name="CheckPauseOnMin"     IsChecked="{Binding Settings.PauseOnMinimize}"     Content="Pause ScreenSaver When Minimized"/>
             </Grid>
         </GroupBox>
     </StackPanel>

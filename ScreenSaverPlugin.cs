@@ -2,9 +2,9 @@
 using Playnite.SDK.Events;
 using Playnite.SDK.Models;
 using Playnite.SDK.Plugins;
+using SharpDX.XInput;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -14,69 +14,60 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
-using System.Windows.Threading;
+using System.Threading.Tasks;
+using Keys = System.Windows.Forms.Keys;
 
 namespace ScreenSaver
 {
     public class ScreenSaverPlugin : GenericPlugin
     {
-        private static readonly ILogger logger = LogManager.GetLogger();
+        #region Infrastructure
 
-        private ScreenSaverSettingsViewModel settings { get; set; }
+        private static readonly ILogger logger = LogManager.GetLogger();
 
         private static readonly string PluginFolder = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
         private static readonly string IconPath = Path.Combine(PluginFolder, "icon.png");
-        private readonly string ImagesPath;
-        private readonly string ExtraMetaDataPath;
-        private readonly string SoundsPath;
 
-        private readonly DispatcherTimer screenSaverStateTimer;
-        private static Window currentScreenSaverWindow;
+        private static object screenSaverLock = new object();
+        private static Task _screenSaverTask;
+        private static Window firstScreenSaverWindow;
         private static Window secondScreenSaverWindow;
         private static Window blackgroundWindow;
         private static IEnumerator<Game> GameEnumerator;
-        private static bool first = false;
 
-        private static object screenSaverLock = new object();
+        private static bool first = false;
+        private static bool IsPolling;
+
+        private static int? TimeSinceStart = null;
+        private static int? _lastInputTimeStampInMs = null;
+
+        private ScreenSaverSettingsViewModel settings { get; set; }
+        private readonly string ImagesPath;
+        private readonly string ExtraMetaDataPath;
+        private readonly string SoundsPath;
 
         private readonly List<GameMenuItem> _gameMenuItems;
         private readonly List<MainMenuItem> _mainMenuItems;
 
         private readonly IPlayniteAPI _playniteAPI;
 
-        [DllImport("user32.dll", EntryPoint = "FindWindow")]
-        public static extern IntPtr FindWindowByCaption(IntPtr ZeroOnly, string lpWindowName);
-        
-        [DllImport("user32.dll")]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
-
-        [DllImport("user32.dll")]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        static extern bool CloseWindow(IntPtr hWnd); 
-        
-        [DllImport("user32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        static extern bool DestroyWindow(IntPtr hwnd);
+        private static readonly Keys[] badKeys = new[] { Keys.KeyCode, Keys.Modifiers, Keys.None, Keys.Packet };
+        private static readonly IList<Keys> _keys = 
+            Enum.GetValues(typeof(Keys)).Cast<Keys>().Where(k => !badKeys.Contains(k)).ToList();
+        private readonly IDictionary<Keys, bool> _keyStates = new Dictionary<Keys, bool>();
 
         public ScreenSaverPlugin(IPlayniteAPI api) : base(api)
         {
             settings = new ScreenSaverSettingsViewModel(this);
-            Properties = new GenericPluginProperties
-            {
-                HasSettings = true
-            };
+            Properties = new GenericPluginProperties { HasSettings = true };
             _playniteAPI = api;
 
             ExtraMetaDataPath = Path.Combine(PlayniteApi.Paths.ConfigurationPath, "ExtraMetadata\\games");
             SoundsPath = Path.Combine(PlayniteApi.Paths.ConfigurationPath, @"ExtensionsData\9c960604-b8bc-4407-a4e4-e291c6097c7d\Music Files\Game");
             ImagesPath = Path.Combine(PlayniteApi.Paths.ConfigurationPath, "library\\files");
 
-            screenSaverStateTimer = new DispatcherTimer();
-
             _gameMenuItems = new List<GameMenuItem>
             {
-                new GameMenuItem { Action = ShowScreenSaver, Description = "Open Window",         Icon = IconPath },
                 new GameMenuItem { Action = OpenScreenSaver, Description = "Preview ScreenSaver", Icon = IconPath },
             };
 
@@ -84,45 +75,14 @@ namespace ScreenSaver
             {
                 new MainMenuItem { Action =  StartScreenSaver, Description = "Start ScreenSaver", Icon = IconPath }
             };
-        }
 
-        private void SetTimerToPoll()
-        {
-            if (Settings.DisablePoll) return;
-
-            screenSaverStateTimer.Interval = TimeSpan.FromSeconds(Settings.PollInterval);
-            screenSaverStateTimer.Tick -= UpdateScreenSavers;
-            screenSaverStateTimer.Tick += StartScreenSaverIfNoInput;
-            screenSaverStateTimer.Start();
-        }
-
-        private void SetTimerToTransition()
-        {
-            screenSaverStateTimer.Interval = TimeSpan.FromSeconds(Settings.GameTransitionInterval);
-            screenSaverStateTimer.Tick -= StartScreenSaverIfNoInput;
-            screenSaverStateTimer.Tick += UpdateScreenSavers;
-            screenSaverStateTimer.Start();
-        }
-
-        private static void ShowScreenSaver(GameMenuItemActionArgs args)
-        {
-            var saver = new ScreenSaverWindow();
-            saver.StartMedia();
-            saver.Show();
-
-            var processes = Process.GetProcesses();
-            logger.Info($"Processes: {string.Join(", ", processes.Select(x => x.ProcessName))}");
-            var playnite = processes.Where(x => x.ProcessName.StartsWith("Playnite.")).FirstOrDefault();
-            if (playnite != null)
+            foreach (var key in _keys)
             {
-                var r = CloseWindow(playnite.Handle);
-                logger.Info($"attempted to close Playnite: {playnite.ProcessName} {r}");
-            }
-            else
-            {
-                logger.Info("Unable to find playnite");
+                 _keyStates[key] = false;
             }
         }
+
+        #endregion
 
         #region Playnite Interface
 
@@ -132,49 +92,187 @@ namespace ScreenSaver
 
         public override UserControl GetSettingsView(bool firstRunSettings) => new ScreenSaverSettingsView();
 
-        public override void OnGameStarting(OnGameStartingEventArgs args)
+        public override void OnApplicationStopped(OnApplicationStoppedEventArgs args)
         {
-            if (Settings.DisableWhilePlaying)
-            { 
-                screenSaverStateTimer.Stop();
+            IsPolling = false;
+            if (!_screenSaverTask.Wait(1000))
+            {
+                logger.Error($"Unable to stop polling task on exit.");
             }
         }
 
-        public override void OnGameStopped(OnGameStoppedEventArgs args) => SetTimerToPoll();
+        public override void OnGameStarting(OnGameStartingEventArgs args)
+        {
+            if (Settings.DisableWhilePlaying)
+            {
+                StopPolling();
+            }
+        }
 
-        public override void OnApplicationStarted(OnApplicationStartedEventArgs args) => SetTimerToPoll();
+        public override void OnGameStopped(OnGameStoppedEventArgs args) => StartPolling();
+
+        public override void OnApplicationStarted(OnApplicationStartedEventArgs args)
+        {
+            StartPolling();
+            Application.Current.MainWindow.StateChanged += OnWindowStateChanged;
+        }
 
         public override IEnumerable<GameMenuItem> GetGameMenuItems(GetGameMenuItemsArgs args) => _gameMenuItems;
-
         public override IEnumerable<MainMenuItem> GetMainMenuItems(GetMainMenuItemsArgs args) => _mainMenuItems;
 
         #endregion
 
-        private void OpenScreenSaver(GameMenuItemActionArgs args)
+        #region Polling
+
+        private void PollForInput()
         {
-            if (_playniteAPI.MainView.SelectedGames.Count() == 1)
+            var controller = new Controller(UserIndex.One);
+            int? oldPacketNumber = null;
+            int lastChangeTimeStamp = 0;
+
+            while (IsPolling)
             {
-                CreateScreenSaverWindow(_playniteAPI.MainView.SelectedGames.First());
+                if (ControllerStateChanged(controller, oldPacketNumber, out var newPacketNumber))
+                {
+                    _lastInputTimeStampInMs = Environment.TickCount;
+                    oldPacketNumber = newPacketNumber;
+                }
+                else if (KeyStateChanged())
+                {
+                    _lastInputTimeStampInMs = Environment.TickCount;
+                }
+
+                var screenSaverIsRunning = TimeSinceStart is null;
+                if (screenSaverIsRunning)
+                {
+                    var timeSinceLastInput = Environment.TickCount - _lastInputTimeStampInMs;
+                    if (timeSinceLastInput > Settings.ScreenSaverInterval * 1000)
+                    {
+                        TimeSinceStart = Environment.TickCount;
+                        lastChangeTimeStamp = Environment.TickCount;
+                        Application.Current.Dispatcher.Invoke(() => StartScreenSaver());
+                    }
+                }
+                else if (_lastInputTimeStampInMs > TimeSinceStart)
+                {
+                    TimeSinceStart = null;
+                    Application.Current.Dispatcher.Invoke(() => firstScreenSaverWindow.Close());
+                }
+                else if (Environment.TickCount - lastChangeTimeStamp > Settings.GameTransitionInterval * 1000)
+                lock (screenSaverLock) if (TimeSinceStart != null)
+                {
+                    lastChangeTimeStamp = Environment.TickCount;
+                    Application.Current.Dispatcher.Invoke(() => UpdateScreenSavers(null, null));
+                }
+            }
+
+            // Close the ScreenSaver, just in case
+            Application.Current.Dispatcher.Invoke(() => firstScreenSaverWindow.Close());
+        }
+
+        private bool KeyStateChanged()
+        {
+            var keyChanged = false;
+            foreach(var key in _keys)
+            {
+                var keyState = _keyStates[key];
+                if (IsKeyPushedDown(key) != _keyStates[key])
+                {
+                    _keyStates[key] = !keyState;
+                    keyChanged = true;
+                }
+            }
+            return keyChanged;
+        }
+
+        private static bool ControllerStateChanged(Controller controller, int? oldPacketNumber, out int newPacketNumber)
+        {
+            newPacketNumber = 0;
+            if (controller.IsConnected)
+            {
+                newPacketNumber = controller.GetState().PacketNumber;
+                return oldPacketNumber != newPacketNumber;
+            }
+            return false;
+        }
+
+        public static bool IsKeyPushedDown(Keys key) => 0 != (GetAsyncKeyState(key) & 0x8000);
+
+        private void StartPolling()
+        {
+            switch (_screenSaverTask?.Status)
+            {
+                case null:
+                case TaskStatus.RanToCompletion:
+                    if (ShouldPoll())
+                    {
+                        IsPolling = true;
+                        _screenSaverTask = Task.Run(() => PollForInput());
+                    }
+                    break;
+                case TaskStatus.Created:
+                case TaskStatus.Running:
+                case TaskStatus.WaitingToRun:
+                case TaskStatus.WaitingForActivation:
+                    break;
+                default:
+                    logger.Warn($"ScreenSaver Task was in an unexpected state: {_screenSaverTask.Status}");
+                    break;
             }
         }
 
+        private void StopPolling()
+        {
+            IsPolling = false;
+            if (!_screenSaverTask.Wait(100))
+            {
+                logger.Error($"Unable to stop polling task on exit.");
+            }
+        }
+
+        private bool ShouldPoll()
+        {
+            var desktopMode = PlayniteApi.ApplicationInfo.Mode == ApplicationMode.Desktop;
+
+            var playOnBoth = Settings.PlayState == PlayState.Always;
+            var playOnFullScreen = Settings.PlayState == PlayState.FullScreen && !desktopMode;
+            var playOnDesktop = Settings.PlayState == PlayState.Desktop && desktopMode;
+
+            return playOnBoth || playOnFullScreen || playOnDesktop;
+        }
+
+        private void OnWindowStateChanged(object sender, EventArgs e)
+        {
+            if (Settings.PauseOnMinimize) switch (Application.Current?.MainWindow?.WindowState)
+            {
+                case WindowState.Normal:
+                case WindowState.Maximized:
+                    StartPolling();
+                    break;
+                case WindowState.Minimized:
+                    StopPolling();
+                    break;
+            }
+        }
+
+        #endregion
+
+        #region Windows
+
         private void CreateScreenSaverWindow(Game game)
         {
-            screenSaverStateTimer.Tick -= StartScreenSaverIfNoInput;
-            screenSaverStateTimer.Stop();
-
             var gameId = game.Id.ToString();
 
             var videoPath = GetVideoPath(gameId);
             var musicPath = GetMusicPath(gameId);
 
-            currentScreenSaverWindow = CreateWindow(
+            firstScreenSaverWindow = CreateScreenSaverLayerWindow(
                 GetBackgroundPath(game.BackgroundImage),
                 GetLogoPath(gameId),
                 videoPath,
                 musicPath);
 
-            var screenSaver = currentScreenSaverWindow.Content as ScreenSaverImage;
+            var screenSaver = firstScreenSaverWindow.Content as ScreenSaverImage;
 
             PlayVideo(screenSaver.VideoPlayer, musicPath);
             PlayAudio(screenSaver.MusicPlayer, videoPath);
@@ -193,16 +291,15 @@ namespace ScreenSaver
             CreateScreenSaverWindows(background, logoPath, videoPath, musicPath);
         }
 
+
         private void CreateScreenSaverWindows(string backgroundPath, string logoPath, string videoPath, string musicPath)
         {
-            screenSaverStateTimer.Stop();
-
-            currentScreenSaverWindow?.Close();
+            firstScreenSaverWindow?.Close();
             secondScreenSaverWindow?.Close();
             MuteBackgroundMusic();
 
-            blackgroundWindow = new Window 
-            { 
+            blackgroundWindow = new Window
+            {
                 Background = Brushes.Black,
                 WindowStyle = WindowStyle.None,
                 ResizeMode = ResizeMode.NoResize,
@@ -212,44 +309,12 @@ namespace ScreenSaver
                 //Topmost = true
             };
             blackgroundWindow.Show();
-            currentScreenSaverWindow = CreateWindow(backgroundPath, logoPath, videoPath, musicPath);
-            secondScreenSaverWindow = CreateWindow(null, null, null, null);
-            PlayMedia(currentScreenSaverWindow.Content, videoPath, musicPath);
-
-            SetTimerToTransition();
+            secondScreenSaverWindow = CreateScreenSaverLayerWindow(null, null, null, null);
+            firstScreenSaverWindow = CreateScreenSaverLayerWindow(backgroundPath, logoPath, videoPath, musicPath);
+            PlayMedia(firstScreenSaverWindow.Content, videoPath, musicPath);
         }
 
-        private void PlayMedia(object content, string videoPath, string musicPath)
-        {
-            var screenSaver = content as ScreenSaverImage;
-            PlayVideo(screenSaver.VideoPlayer, musicPath);
-            PlayAudio(screenSaver.MusicPlayer, videoPath);
-        }
-
-        private void PlayVideo(MediaElement videoPlayer, string musicPath)
-        {
-            if (!Settings.IncludeVideo) return;
-
-            if (ShouldPlayVideoAudio(musicPath))
-            {
-                videoPlayer.IsMuted = false;
-            }
-
-            videoPlayer.Play();
-        }
-
-        private void PlayAudio(MediaElement musicPlayer, string videoPath)
-        {
-            if (Settings.AudioSource == AudioSource.Music || (Settings.PlayBackup && videoPath is null))
-            {
-                musicPlayer.Play();
-            }
-        }
-
-        private bool ShouldPlayVideoAudio(string musicPath) 
-            => Settings.AudioSource == AudioSource.Video || (Settings.PlayBackup && musicPath is null);
-
-        private Window CreateWindow(string backgroundPath, string logoPath, string videoPath, string musicPath)
+        private Window CreateScreenSaverLayerWindow(string backgroundPath, string logoPath, string videoPath, string musicPath)
         {
             var window = new Window
             {
@@ -286,55 +351,15 @@ namespace ScreenSaver
             window.Closed += ScreenSaverClosed;
 
             window.Show();
+            window.Focus();
 
             return window;
         }
 
-        // Based on this implementation: http://www.pinvoke.net/default.aspx/user32.GetLastInputInfo
-        [StructLayout(LayoutKind.Sequential)]
-        struct LASTINPUTINFO
-        {
-            public static readonly int SizeOf = Marshal.SizeOf(typeof(LASTINPUTINFO));
-
-            [MarshalAs(UnmanagedType.U4)]
-            public uint cbSize;
-            [MarshalAs(UnmanagedType.U4)]
-            public uint dwTime;
-        }
-
-        [DllImport("user32.dll")]
-        static extern bool GetLastInputInfo(ref LASTINPUTINFO plii);
-        static uint GetLastInputTimeMs()
-        {
-            uint idleTime = 0;
-            LASTINPUTINFO lastInputInfo = new LASTINPUTINFO();
-            lastInputInfo.cbSize = (uint)Marshal.SizeOf(lastInputInfo);
-            lastInputInfo.dwTime = 0;
-
-            uint envTicks = (uint)Environment.TickCount;
-
-            if (GetLastInputInfo(ref lastInputInfo))
-            {
-                uint lastInputTick = lastInputInfo.dwTime;
-
-                idleTime = envTicks - lastInputTick;
-            }
-
-            return idleTime;
-        }
-
-        private void StartScreenSaverIfNoInput(object _, object __)
-        {
-            if (GetLastInputTimeMs() > Settings.ScreenSaverInterval * 1000)
-            {
-                StartScreenSaver();
-            }
-        }
-
         private void UpdateScreenSavers(object _, object __)
         {
-            var newWindow = first ? currentScreenSaverWindow : secondScreenSaverWindow;
-            var oldWindow = first ? secondScreenSaverWindow : currentScreenSaverWindow;
+            var newWindow = first ? firstScreenSaverWindow : secondScreenSaverWindow;
+            var oldWindow = first ? secondScreenSaverWindow : firstScreenSaverWindow;
             first = !first;
 
             GetNextGameContent(
@@ -360,7 +385,7 @@ namespace ScreenSaver
             }
 
             if (Settings.IncludeVideo)
-             {
+            {
                 context.VideoPath = videPath;
                 if (videPath != null)
                 {
@@ -391,19 +416,11 @@ namespace ScreenSaver
 
             var fadeInWindow  = CreateFade(newWindow,      UIElement.OpacityProperty,   duration, 0,      1);
             var fadeOutWindow = CreateFade(oldWindow,      UIElement.OpacityProperty,   duration, 1,      0);
-            var fadeInMusic   = CreateFade(newAudioPlayer, MediaElement.VolumeProperty, duration, 0, volume);
-            var fadeOutMusic  = CreateFade(oldAudioPlayer, MediaElement.VolumeProperty, duration, volume, 0);
+            var fadeInAudio   = CreateFade(newAudioPlayer, MediaElement.VolumeProperty, duration, 0, volume);
+            var fadeOutAudio  = CreateFade(oldAudioPlayer, MediaElement.VolumeProperty, duration, volume, 0);
 
             var storyBoard = new Storyboard
-            {
-                Children = new TimelineCollection
-                {
-                    fadeInWindow,
-                    fadeOutWindow,
-                    fadeInMusic,
-                    fadeOutMusic
-                }
-            };
+            { Children = new TimelineCollection { fadeInWindow, fadeOutWindow, fadeInAudio, fadeOutAudio } };
 
             PlayVideo(newContent.VideoPlayer, musicPath);
             PlayAudio(newContent.MusicPlayer, videPath);
@@ -441,6 +458,71 @@ namespace ScreenSaver
                      (Settings.BackgroundSkip && backgroundPath is null));
         }
 
+        private void ScreenSaverClosed(object sender, EventArgs _)
+        {
+            lock (screenSaverLock)
+            {
+                blackgroundWindow?.Close();
+                var window = sender as Window;
+
+                window.Closed -= ScreenSaverClosed;
+
+                var content = window.Content as ScreenSaverImage;
+                var context = content.DataContext as ScreenSaverViewModel;
+
+                content.VideoPlayer.Stop();
+                content.VideoPlayer.Close();
+                content.MusicPlayer.Stop();
+                content.MusicPlayer.Close();
+
+                if (sender == firstScreenSaverWindow)
+                {
+                    StartPolling();
+                    UnMuteBackgroundMusic();
+                    secondScreenSaverWindow?.Close();
+                    firstScreenSaverWindow = null;
+                }
+                else
+                {
+                    firstScreenSaverWindow?.Close();
+                    secondScreenSaverWindow = null;
+                }
+                TimeSinceStart = null;
+            }
+        }
+
+        #region Media
+
+        private void PlayMedia(object content, string videoPath, string musicPath)
+        {
+            var screenSaver = content as ScreenSaverImage;
+            PlayVideo(screenSaver.VideoPlayer, musicPath);
+            PlayAudio(screenSaver.MusicPlayer, videoPath);
+        }
+
+        private void PlayVideo(MediaElement videoPlayer, string musicPath)
+        {
+            if (!Settings.IncludeVideo) return;
+
+            if (ShouldPlayVideoAudio(musicPath))
+            {
+                videoPlayer.IsMuted = false;
+            }
+
+            videoPlayer.Play();
+        }
+
+        private void PlayAudio(MediaElement musicPlayer, string videoPath)
+        {
+            if (Settings.AudioSource == AudioSource.Music || (Settings.PlayBackup && videoPath is null))
+            {
+                musicPlayer.Play();
+            }
+        }
+
+        private bool ShouldPlayVideoAudio(string musicPath)
+            => Settings.AudioSource == AudioSource.Video || (Settings.PlayBackup && musicPath is null);
+
         private DoubleAnimation CreateFade(DependencyObject window, object property, Duration duration, double from, double to)
         {
             var fade = new DoubleAnimation()
@@ -456,39 +538,6 @@ namespace ScreenSaver
 
             return fade;
         }
-
-        private void ScreenSaverClosed(object sender, EventArgs _)
-        {
-            screenSaverStateTimer.Stop();
-            blackgroundWindow?.Close();
-            
-            lock(screenSaverLock)
-            {
-                if (sender == currentScreenSaverWindow)
-                {
-                    SetTimerToPoll();
-                    secondScreenSaverWindow?.Close();
-                }
-                else
-                {
-                    currentScreenSaverWindow?.Close();
-                }
-
-                var window = sender as Window;
-
-                window.Closed -= ScreenSaverClosed;
-
-                var content = window.Content as ScreenSaverImage;
-                var context = content.DataContext as ScreenSaverViewModel;
-
-                content.VideoPlayer.Stop();
-                content.VideoPlayer.Close();
-                content.MusicPlayer.Stop();
-                content.MusicPlayer.Close();
-            }
-        }
-
-        #region Helpers
 
         private string GetLogoPath(string gameId)
         {
@@ -516,22 +565,63 @@ namespace ScreenSaver
 
         private string GetBackgroundPath(string localPath)
         {
+            if (localPath is null) return null;
             var backgroundPath = Path.Combine(ImagesPath, localPath);
             return File.Exists(backgroundPath)
                 ? backgroundPath
                 : null;
         }
 
+        #endregion
+
+        #endregion
+
+        #region Menus
+
+        #region Game Menu
+
+        private void OpenScreenSaver(GameMenuItemActionArgs args)
+        {
+            if (_playniteAPI.MainView.SelectedGames.Count() == 1)
+            {
+                StopPolling();
+                CreateScreenSaverWindow(_playniteAPI.MainView.SelectedGames.First());
+                firstScreenSaverWindow.Closed += (_, __) => StartPolling();
+            }
+        }
+
+        #endregion
+
+        #region Main Menu
+
+
+
+        #endregion
+
+        #endregion
+
+        #region Imported Methods
+
+        [DllImport("user32.dll")]
+        static extern short GetAsyncKeyState(Keys vKey);
+
+        #endregion
+
+        #region Helpers
+
         private void MuteBackgroundMusic()
         {
-            if (PlayniteApi.ApplicationInfo.Mode != ApplicationMode.Fullscreen)
-            {
-                return;
-            }
-
-            if (PlayniteApi.ApplicationSettings.Fullscreen.IsMusicMuted == false)
+            if (PlayniteApi.ApplicationInfo.Mode == ApplicationMode.Fullscreen)
             {
                 PlayniteApi.ApplicationSettings.Fullscreen.IsMusicMuted = true;
+            }
+        }
+
+        private void UnMuteBackgroundMusic()
+        {
+            if (PlayniteApi.ApplicationInfo.Mode == ApplicationMode.Fullscreen)
+            {
+                PlayniteApi.ApplicationSettings.Fullscreen.IsMusicMuted = false;
             }
         }
 

@@ -16,10 +16,19 @@ namespace ScreenSaver
         Music
     }
 
+    public enum PlayState
+    {
+        Never,
+        Desktop,
+        FullScreen,
+        Always
+    }
+
     public class ScreenSaverSettings : ObservableObject
     {
         public uint Volume { get; set; } = 50;
         public AudioSource AudioSource { get; set; } = AudioSource.Music;
+        public PlayState PlayState { get; set; } = PlayState.FullScreen;
         public uint GameTransitionInterval { get; set; } = 10;
         public uint ScreenSaverInterval { get; set; } = 10;
         public uint PollInterval { get; set; } = 3;
@@ -31,7 +40,7 @@ namespace ScreenSaver
         public bool IncludeVideo { get; set; } = true;
         public bool IncludeLogo { get; set; } = true;
         public bool DisableWhilePlaying { get; set; } = true;
-        public bool DisablePoll { get; set; } = false;
+        public bool PauseOnMinimize { get; set; } = true;
     }
 
     public class ScreenSaverSettingsViewModel : ObservableObject, ISettings

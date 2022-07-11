@@ -1,11 +1,6 @@
 ﻿using Playnite.SDK;
 using Playnite.SDK.Data;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
 
 namespace ScreenSaver
 {
@@ -40,7 +35,7 @@ namespace ScreenSaver
         public bool IncludeVideo { get; set; } = true;
         public bool IncludeLogo { get; set; } = true;
         public bool DisableWhilePlaying { get; set; } = true;
-        public bool PauseOnMinimize { get; set; } = true;
+        public bool PauseOnDeactivate { get; set; } = true;
     }
 
     public class ScreenSaverSettingsViewModel : ObservableObject, ISettings
@@ -87,6 +82,15 @@ namespace ScreenSaver
 
         public void EndEdit()
         {
+            if (settings.PlayState != editingClone.PlayState) switch (settings.PlayState)
+            {
+                case PlayState.Never:
+                    plugin.StopPolling();
+                    break;
+                default:
+                    plugin.StartPolling();
+                    break;
+            }
             plugin.SavePluginSettings(Settings);
         }
 

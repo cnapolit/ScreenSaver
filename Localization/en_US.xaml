@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:sys="clr-namespace:System;assembly=mscorlib">
+
+    <!-- Settings Resources -->
+
+    <sys:String x:Key="SETTINGS_AUDIO_VOLUME">Audio Volume</sys:String>
+    
+    <sys:String x:Key="SETTINGS_AUDIO_SOURCE">Source For Audio</sys:String>
+    <sys:String x:Key="SETTINGS_ENUM_AUDIO_SOURCE_NONE">None</sys:String>
+    <sys:String x:Key="SETTINGS_ENUM_AUDIO_SOURCE_VIDEO">Video</sys:String>
+    <sys:String x:Key="SETTINGS_ENUM_AUDIO_SOURCE_MUSIC">Music</sys:String>
+
+    <sys:String x:Key="SETTINGS_PLAY_STATE">When To Play</sys:String>
+    <sys:String x:Key="SETTINGS_ENUM_PLAY_STATE_NEVER">Never</sys:String>
+    <sys:String x:Key="SETTINGS_ENUM_PLAY_STATE_DESKTOP">Desktop</sys:String>
+    <sys:String x:Key="SETTINGS_ENUM_PLAY_STATE_FULLSCREEN">FullScreen</sys:String>
+    <sys:String x:Key="SETTINGS_ENUM_PLAY_STATE_ALWAYS">Always</sys:String>
+
+    <sys:String x:Key="SETTINGS_GAME_TRANS">Time Between Game Transitions in Seconds:</sys:String>
+    <sys:String x:Key="SETTINGS_SVR_INTERVAL">Time for ScreenSaver to Appear in Seconds:</sys:String>
+
+    <sys:String x:Key="SETTINGS_BCKGRD_SKIP">Skip Games Missing a Background</sys:String>
+    <sys:String x:Key="SETTINGS_VIDEO_SKIP">Skip Games Missing Video</sys:String>
+    <sys:String x:Key="SETTINGS_MUSIC_SKIP">Skip Games Missing Music</sys:String>
+    <sys:String x:Key="SETTINGS_LOGO_SKIP">Skip Games Missing Logos</sys:String>
+
+    <sys:String x:Key="SETTINGS_PLAY_BACKUP">Play backup audio if selected is missing</sys:String>
+    <sys:String x:Key="SETTINGS_DISABLE_WHILE_PLAY">Disable ScreenSaver while Playing</sys:String>
+    <sys:String x:Key="SETTINGS_PAUSE_ON_DEAC">Disable ScreenSaver When Not In Use</sys:String>
+
+    <!-- Settings Resources -->
+
+    <sys:String x:Key="MAIN_MENU_START">Start ScreenSaver</sys:String>
+    <sys:String x:Key="GAME_MENU_PREVIEW">Preview ScreenSaver</sys:String>
+
+</ResourceDictionary>

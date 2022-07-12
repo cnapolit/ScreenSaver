@@ -60,9 +60,9 @@
                     <ComboBoxItem Content="{DynamicResource SETTINGS_ENUM_PLAY_STATE_ALWAYS}"/>
                 </ComboBox>
                 <Label     Grid.Row="6"  Grid.Column="0"       Name="GameTransLabel"   Content="{DynamicResource SETTINGS_GAME_TRANS}"/>
-                <s:UIntDUp Grid.Row="6"  Grid.Column="1"     x:Name="GameTransUpDown"   Width="40" Value="{Binding Settings.GameTransitionInterval}"/>
+                <s:UIntDUp Grid.Row="6"  Grid.Column="1"     x:Name="GameTransUpDown"   Width="40" Value="{Binding Settings.GameTransitionInterval}" HorizontalAlignment="Left"/>
                 <Label     Grid.Row="8"  Grid.Column="0"       Name="ScreenSaverLabel" Content="{DynamicResource SETTINGS_SVR_INTERVAL}"/>
-                <s:UIntDUp Grid.Row="8"  Grid.Column="1"     x:Name="ScreenSaverUpDown" Width="40" Value="{Binding Settings.ScreenSaverInterval}"/>
+                <s:UIntDUp Grid.Row="8"  Grid.Column="1"     x:Name="ScreenSaverUpDown" Width="40" Value="{Binding Settings.ScreenSaverInterval}" HorizontalAlignment="Left"/>
                 <CheckBox  Grid.Row="10" Grid.ColumnSpan="2"   Name="CheckBackgroundSkip" IsChecked="{Binding Settings.BackgroundSkip}"      Content="{DynamicResource SETTINGS_BCKGRD_SKIP}"/>
                 <CheckBox  Grid.Row="12" Grid.ColumnSpan="2"   Name="CheckVideoSkip"      IsChecked="{Binding Settings.VideoSkip}"           Content="{DynamicResource SETTINGS_VIDEO_SKIP}"/>
                 <CheckBox  Grid.Row="14" Grid.ColumnSpan="2"   Name="CheckMusicSkip"      IsChecked="{Binding Settings.MusicSkip}"           Content="{DynamicResource SETTINGS_MUSIC_SKIP}"/>

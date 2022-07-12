@@ -1,11 +1,12 @@
-﻿using ScreenSaver.Common.Constants;
-using Microsoft.Win32;
+﻿using Microsoft.Win32;
 using Playnite.SDK;
 using Playnite.SDK.Events;
 using Playnite.SDK.Models;
 using Playnite.SDK.Plugins;
+using ScreenSaver.Common.Constants;
 using SharpDX.XInput;
 using System;
+using System.Diagnostics;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -30,8 +31,10 @@ namespace ScreenSaver
         private static readonly string PluginFolder = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
         private static readonly string IconPath = Path.Combine(PluginFolder, "icon.png");
 
-        private static object screenSaverLock = new object();
-        private static object pollingLock = new object();
+        private static readonly object screenSaverLock = new object();
+
+        private static LowLevelMouseProc _proc = HookCallback;
+        private static IntPtr _hookID = IntPtr.Zero;
 
         private static Task _screenSaverTask;
         private static Window firstScreenSaverWindow;
@@ -39,11 +42,12 @@ namespace ScreenSaver
         private static Window blackgroundWindow;
         private static IEnumerator<Game> GameEnumerator;
 
-        private static bool first = false;
+        private static bool first;
         private static bool IsPolling;
 
         private static int? TimeSinceStart = null;
         private static int? _lastInputTimeStampInMs = null;
+        private static int _lastChangeTimeStamp;
 
         private ScreenSaverSettingsViewModel settings { get; set; }
         private readonly string ExtraMetaDataPath;
@@ -84,7 +88,7 @@ namespace ScreenSaver
             {
                 new MainMenuItem 
                 {
-                    Action = StartScreenSaver,
+                    Action = ManuallyStartScreenSaver,
                     Description = Resource.MAIN_MENU_START,
                     MenuSection = "@ScreenSaver",
                     Icon = IconPath 
@@ -110,6 +114,7 @@ namespace ScreenSaver
         public override void OnApplicationStopped(OnApplicationStoppedEventArgs args)
         {
             IsPolling = false;
+            UnhookWindowsHookEx(_hookID);
             if (!_screenSaverTask.Wait(1000))
             {
                 logger.Error($"Unable to stop polling task on exit.");
@@ -128,6 +133,7 @@ namespace ScreenSaver
 
         public override void OnApplicationStarted(OnApplicationStartedEventArgs args)
         {
+            _hookID = SetHook(_proc);
             StartPolling();
 
             SystemEvents.PowerModeChanged += OnPowerModeChanged;
@@ -147,7 +153,7 @@ namespace ScreenSaver
         {
             var controller = new Controller(UserIndex.One);
             int? oldPacketNumber = null;
-            int lastChangeTimeStamp = 0;
+            _lastChangeTimeStamp = 0;
             _lastInputTimeStampInMs = Environment.TickCount;
 
             while (IsPolling)
@@ -168,20 +174,20 @@ namespace ScreenSaver
                     var timeSinceLastInput = Environment.TickCount - _lastInputTimeStampInMs;
                     if (timeSinceLastInput > Settings.ScreenSaverInterval * 1000)
                     {
-                        TimeSinceStart = Environment.TickCount;
-                        lastChangeTimeStamp = Environment.TickCount;
+                        TimeSinceStart = Environment.TickCount + 100;
+                        _lastChangeTimeStamp = Environment.TickCount;
                         Application.Current.Dispatcher.Invoke(() => StartScreenSaver());
                     }
                 }
                 else if (_lastInputTimeStampInMs > TimeSinceStart)
                 {
-                    TimeSinceStart = null;
-                    Application.Current.Dispatcher.Invoke(() => firstScreenSaverWindow?.Close());
+                    //TimeSinceStart = null;
+                    //Application.Current.Dispatcher.Invoke(() => firstScreenSaverWindow?.Close());
                 }
-                else if (Environment.TickCount - lastChangeTimeStamp > Settings.GameTransitionInterval * 1000)
+                else if (Environment.TickCount - _lastChangeTimeStamp > Settings.GameTransitionInterval * 1000)
                 lock (screenSaverLock) if (TimeSinceStart != null)
                 {
-                    lastChangeTimeStamp = Environment.TickCount;
+                    _lastChangeTimeStamp = Environment.TickCount;
                     Application.Current.Dispatcher.Invoke(() => UpdateScreenSavers(null, null));
                 }
             }
@@ -224,7 +230,7 @@ namespace ScreenSaver
                     if (ShouldPoll())
                     {
                         IsPolling = true;
-                        _screenSaverTask = Task.Run(() => PollForInput());
+                        _screenSaverTask = Task.Run(PollForInput);
                     }
                     break;
                 case TaskStatus.Created:
@@ -241,7 +247,7 @@ namespace ScreenSaver
         public void StopPolling()
         {
             IsPolling = false;
-            lock(pollingLock) if (_screenSaverTask.Wait(100))
+            if (_screenSaverTask.Wait(100))
             {
                 logger.Info($"Stopped polling task.");
             }
@@ -260,6 +266,24 @@ namespace ScreenSaver
             var playOnDesktop = Settings.PlayState == PlayState.Desktop && desktopMode;
 
             return playOnBoth || playOnFullScreen || playOnDesktop;
+        }
+
+        private static IntPtr SetHook(LowLevelMouseProc proc)
+        {
+            using (Process curProcess = Process.GetCurrentProcess())
+            using (ProcessModule curModule = curProcess.MainModule)
+            {
+                return SetWindowsHookEx(WH_MOUSE_LL, proc, GetModuleHandle(curModule.ModuleName), 0);
+            }
+        }
+
+        private static IntPtr HookCallback(int nCode, IntPtr wParam, IntPtr lParam)
+        {
+            if (nCode >= 0)
+            {
+                _lastInputTimeStampInMs = Environment.TickCount;
+            }
+            return CallNextHookEx(_hookID, nCode, wParam, lParam);
         }
 
         private void OnWindowStateChanged(object sender, EventArgs e)
@@ -324,15 +348,25 @@ namespace ScreenSaver
             PlayAudio(screenSaver.MusicPlayer, videoPath);
         }
 
-        private void StartScreenSaver(object _ = null)
+        private void ManuallyStartScreenSaver(object _ = null)
+        {
+            TimeSinceStart = Environment.TickCount + 100;
+            _lastChangeTimeStamp = Environment.TickCount;
+            StartScreenSaver();
+
+            // Kick off the poll if it isn't running already
+            StartPolling();
+        }
+
+        private void StartScreenSaver()
         {
             GameEnumerator = GetCurrentGroupEnumerator();
 
             GetNextGameContent(
                 out var background,
-                out var logoPath,
                 out var videoPath,
-                out var musicPath);
+                out var musicPath,
+                out var logoPath);
 
             CreateScreenSaverWindows(background, logoPath, videoPath, musicPath);
         }
@@ -509,6 +543,12 @@ namespace ScreenSaver
 
         private void ScreenSaverClosed(object sender, EventArgs _)
         {
+            // Could have been manually started, which does not guarantee we should continue polling
+            if (!ShouldPoll())
+            {
+                StopPolling();
+            }
+
             lock (screenSaverLock)
             {
                 blackgroundWindow?.Close();
@@ -659,6 +699,52 @@ namespace ScreenSaver
 
         [DllImport("user32.dll")]
         static extern short GetAsyncKeyState(Keys vKey);
+
+        private delegate IntPtr LowLevelMouseProc(int nCode, IntPtr wParam, IntPtr lParam);
+
+        private const int WH_MOUSE_LL = 14;
+
+        private enum MouseMessages
+        {
+            WM_LBUTTONDOWN = 0x0201,
+            WM_LBUTTONUP = 0x0202,
+            WM_MOUSEMOVE = 0x0200,
+            WM_MOUSEWHEEL = 0x020A,
+            WM_RBUTTONDOWN = 0x0204,
+            WM_RBUTTONUP = 0x0205
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        private struct POINT
+        {
+            public int x;
+            public int y;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        private struct MSLLHOOKSTRUCT
+        {
+            public POINT pt;
+            public uint mouseData;
+            public uint flags;
+            public uint time;
+            public IntPtr dwExtraInfo;
+        }
+
+        [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+        private static extern IntPtr SetWindowsHookEx(int idHook, LowLevelMouseProc lpfn, IntPtr hMod, uint dwThreadId);
+
+        [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static extern bool UnhookWindowsHookEx(IntPtr hhk);
+
+        [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+        private static extern IntPtr CallNextHookEx(IntPtr hhk, int nCode,
+            IntPtr wParam, IntPtr lParam);
+
+        [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+        private static extern IntPtr GetModuleHandle(string lpModuleName);
+
 
         #endregion
 

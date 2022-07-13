@@ -40,7 +40,7 @@ namespace ScreenSaver
         private static Window firstScreenSaverWindow;
         private static Window secondScreenSaverWindow;
         private static Window blackgroundWindow;
-        private static IEnumerator<Game> GameEnumerator;
+        private static IEnumerator<GameContent> GameEnumerator;
 
         private static bool first;
         private static bool IsPolling;
@@ -316,7 +316,6 @@ namespace ScreenSaver
             }
         }
 
-        //fix sounds not playing after system resume
         private void OnPowerModeChanged(object sender, PowerModeChangedEventArgs args)
         {
             if (args.Mode == PowerModes.Resume)
@@ -331,21 +330,14 @@ namespace ScreenSaver
 
         private void CreateScreenSaverWindow(Game game)
         {
-            var gameId = game.Id.ToString();
+            var gameContent = ConstructGameContent(game);
 
-            var videoPath = GetVideoPath(gameId);
-            var musicPath = GetMusicPath(gameId);
-
-            firstScreenSaverWindow = CreateScreenSaverLayerWindow(
-                GetBackgroundPath(game),
-                GetLogoPath(gameId),
-                videoPath,
-                musicPath);
+            firstScreenSaverWindow = CreateScreenSaverLayerWindow(gameContent);
 
             var screenSaver = firstScreenSaverWindow.Content as ScreenSaverImage;
 
-            PlayVideo(screenSaver.VideoPlayer, musicPath);
-            PlayAudio(screenSaver.MusicPlayer, videoPath);
+            PlayVideo(screenSaver.VideoPlayer, gameContent.MusicPath);
+            PlayAudio(screenSaver.MusicPlayer, gameContent.VideoPath);
         }
 
         private void ManuallyStartScreenSaver(object _ = null)
@@ -360,19 +352,15 @@ namespace ScreenSaver
 
         private void StartScreenSaver()
         {
-            GameEnumerator = GetCurrentGroupEnumerator();
+            GameEnumerator = GetGameContentEnumerator();
 
-            GetNextGameContent(
-                out var background,
-                out var videoPath,
-                out var musicPath,
-                out var logoPath);
+            var gameContent = GetNextGameContent();
 
-            CreateScreenSaverWindows(background, logoPath, videoPath, musicPath);
+            CreateScreenSaverWindows(gameContent);
         }
 
 
-        private void CreateScreenSaverWindows(string backgroundPath, string logoPath, string videoPath, string musicPath)
+        private void CreateScreenSaverWindows(GameContent gameContent)
         {
             firstScreenSaverWindow?.Close();
             secondScreenSaverWindow?.Close();
@@ -390,13 +378,13 @@ namespace ScreenSaver
             };
             blackgroundWindow.Show();
 
-            secondScreenSaverWindow = CreateScreenSaverLayerWindow(null, null, null, null);
-            firstScreenSaverWindow = CreateScreenSaverLayerWindow(backgroundPath, logoPath, videoPath, musicPath);
+            secondScreenSaverWindow = CreateScreenSaverLayerWindow(gameContent);
+            firstScreenSaverWindow = CreateScreenSaverLayerWindow(gameContent);
 
-            PlayMedia(firstScreenSaverWindow.Content, videoPath, musicPath);
+            PlayMedia(firstScreenSaverWindow.Content, gameContent.VideoPath, gameContent.MusicPath);
         }
 
-        private Window CreateScreenSaverLayerWindow(string backgroundPath, string logoPath, string videoPath, string musicPath)
+        private Window CreateScreenSaverLayerWindow(GameContent gameContent)
         {
             var window = new Window
             {
@@ -417,10 +405,10 @@ namespace ScreenSaver
                 DataContext = new ScreenSaverViewModel
                 {
                     Settings = Settings,
-                    BackgroundPath = backgroundPath,
-                    LogoPath = logoPath,
-                    VideoPath = videoPath,
-                    MusicPath = musicPath
+                    BackgroundPath = gameContent?.BackgroundPath,
+                    LogoPath = gameContent?.LogoPath,
+                    VideoPath = gameContent?.VideoPath,
+                    MusicPath = gameContent?.MusicPath
                 }
             };
 
@@ -444,35 +432,31 @@ namespace ScreenSaver
             var oldWindow = first ? secondScreenSaverWindow : firstScreenSaverWindow;
             first = !first;
 
-            GetNextGameContent(
-                out var background, 
-                out var videPath,
-                out var musicPath,
-                out var logoPath);
+            var gameContent = GetNextGameContent();
 
             var newContent = newWindow.Content as ScreenSaverImage;
             var context = newContent.DataContext as ScreenSaverViewModel;
 
-            context.BackgroundPath = background;
-            newContent.BackgroundImage.Source = background == null
+            context.BackgroundPath = gameContent.BackgroundPath;
+            newContent.BackgroundImage.Source = gameContent.BackgroundPath is null
                 ? null
-                : new BitmapImage(new Uri(background));
+                : new BitmapImage(new Uri(gameContent.BackgroundPath));
 
             if (Settings.IncludeLogo)
             {
-                context.LogoPath = logoPath;
-                newContent.LogoImage.Source = logoPath == null
+                context.LogoPath = gameContent.LogoPath;
+                newContent.LogoImage.Source = gameContent.LogoPath is null
                     ? null
-                    : new BitmapImage(new Uri(logoPath));
+                    : new BitmapImage(new Uri(gameContent.LogoPath));
             }
 
             if (Settings.IncludeVideo)
             {
-                context.VideoPath = videPath;
-                if (videPath != null)
+                context.VideoPath = gameContent.VideoPath;
+                if (gameContent.VideoPath != null)
                 {
                     newContent.VideoPlayer.Visibility = Visibility.Visible;
-                    newContent.VideoPlayer.Source = new Uri(videPath);
+                    newContent.VideoPlayer.Source = new Uri(gameContent.VideoPath);
                 }
                 else
                 {
@@ -483,14 +467,14 @@ namespace ScreenSaver
 
             if (Settings.AudioSource is AudioSource.Music)
             {
-                context.MusicPath = musicPath;
-                newContent.MusicPlayer.Source = musicPath != null ? new Uri(musicPath) : null;
+                context.MusicPath = gameContent.MusicPath;
+                newContent.MusicPlayer.Source = gameContent.MusicPath is null ? null: new Uri(gameContent.MusicPath);
             }
 
             var duration = new Duration(TimeSpan.FromSeconds(1));
             var volume = Settings.Volume / 100.0;
 
-            var shouldPlayVideoAudio = ShouldPlayVideoAudio(musicPath);
+            var shouldPlayVideoAudio = ShouldPlayVideoAudio(gameContent.MusicPath);
             var oldContent = oldWindow.Content as ScreenSaverImage;
 
             var newAudioPlayer = shouldPlayVideoAudio ? newContent.VideoPlayer : newContent.MusicPlayer;
@@ -504,41 +488,26 @@ namespace ScreenSaver
             var storyBoard = new Storyboard
             { Children = new TimelineCollection { fadeInWindow, fadeOutWindow, fadeInAudio, fadeOutAudio } };
 
-            PlayVideo(newContent.VideoPlayer, musicPath);
-            PlayAudio(newContent.MusicPlayer, videPath);
+            PlayVideo(newContent.VideoPlayer, gameContent.MusicPath);
+            PlayAudio(newContent.MusicPlayer, gameContent.VideoPath);
 
             storyBoard.Begin();
         }
 
-        private void GetNextGameContent(
-            out string backgroundPath, out string videoPath, out string musicPath, out string logoPath)
+        private GameContent GetNextGameContent()
         {
-            // TODO: add some logic to fail after iterating over all games (maybe by count, filter, or something else)
-            do
-            {
                 if (!GameEnumerator.MoveNext())
                 {
                     // Reset throws NotImplementedException as of 7/5/22
-                    GameEnumerator = GetCurrentGroupEnumerator();
+                    GameEnumerator = GetGameContentEnumerator();
                     if (!GameEnumerator.MoveNext())
                     {
                         logger.Warn("No games found while rendering ScreenSaver");
-                        backgroundPath = videoPath = musicPath = logoPath = null;
-                        return;
+                        return null;
                     }
                 }
 
-                var newGame = GameEnumerator.Current;
-                var gameId = newGame.Id.ToString();
-
-                backgroundPath = GetBackgroundPath(newGame);
-                musicPath = GetMusicPath(gameId);
-                logoPath  = GetLogoPath(gameId);
-                videoPath = GetVideoPath(gameId);
-            } while ((Settings.VideoSkip      && videoPath      is null) ||
-                     (Settings.MusicSkip      && musicPath      is null) ||
-                     (Settings.LogoSkip       && logoPath       is null) ||
-                     (Settings.BackgroundSkip && backgroundPath is null));
+                return GameEnumerator.Current;
         }
 
         private void ScreenSaverClosed(object sender, EventArgs _)
@@ -766,9 +735,45 @@ namespace ScreenSaver
             }
         }
 
+
+        private class GameContent
+        {
+            public string Id { get; set; }
+            public string GameName { get; set; }
+            public string LogoPath { get; set; }
+            public string MusicPath { get; set; }
+            public string VideoPath { get; set; }
+            public string BackgroundPath { get; set; }
+        }
+
+        private GameContent ConstructGameContent(Game game)
+        {
+            var id = game.Id.ToString();
+            return new GameContent
+            {
+                Id             = id,
+                GameName       = game.Name,
+                LogoPath       = GetLogoPath(id),
+                MusicPath      = GetMusicPath(id),
+                VideoPath      = GetVideoPath(id),
+                BackgroundPath = GetBackgroundPath(game),
+            };
+        }
+
+        private bool ValidGameContent(GameContent gameContent)
+            => (Settings.VideoSkip      && gameContent.VideoPath      is null) ||
+               (Settings.MusicSkip      && gameContent.MusicPath      is null) ||
+               (Settings.LogoSkip       && gameContent.LogoPath       is null) ||
+               (Settings.BackgroundSkip && gameContent.BackgroundPath is null);
+
+
         private static readonly Random _Rng = new Random();
-        private IEnumerator<Game> GetCurrentGroupEnumerator() 
-            => _playniteAPI.Database.Games.OrderBy(_ => _Rng.Next()).GetEnumerator();
+        private IEnumerator<GameContent> GetGameContentEnumerator()
+            => _playniteAPI.Database.Games.
+            Select(ConstructGameContent).
+            Where(ValidGameContent).
+            OrderBy(_ => _Rng.Next()).
+            GetEnumerator();
 
         private ScreenSaverSettings Settings => settings.Settings;
 

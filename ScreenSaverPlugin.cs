@@ -181,8 +181,8 @@ namespace ScreenSaver
                 }
                 else if (_lastInputTimeStampInMs > TimeSinceStart)
                 {
-                    //TimeSinceStart = null;
-                    //Application.Current.Dispatcher.Invoke(() => firstScreenSaverWindow?.Close());
+                    TimeSinceStart = null;
+                    Application.Current.Dispatcher.Invoke(() => firstScreenSaverWindow?.Close());
                 }
                 else if (Environment.TickCount - _lastChangeTimeStamp > Settings.GameTransitionInterval * 1000)
                 lock (screenSaverLock) if (TimeSinceStart != null)
@@ -247,7 +247,7 @@ namespace ScreenSaver
         public void StopPolling()
         {
             IsPolling = false;
-            if (_screenSaverTask.Wait(100))
+            if (_screenSaverTask?.Wait(100) ?? true)
             {
                 logger.Info($"Stopped polling task.");
             }
@@ -378,7 +378,7 @@ namespace ScreenSaver
             };
             blackgroundWindow.Show();
 
-            secondScreenSaverWindow = CreateScreenSaverLayerWindow(gameContent);
+            secondScreenSaverWindow = CreateScreenSaverLayerWindow(null);
             firstScreenSaverWindow = CreateScreenSaverLayerWindow(gameContent);
 
             PlayMedia(firstScreenSaverWindow.Content, gameContent.VideoPath, gameContent.MusicPath);
@@ -761,10 +761,10 @@ namespace ScreenSaver
         }
 
         private bool ValidGameContent(GameContent gameContent)
-            => (Settings.VideoSkip      && gameContent.VideoPath      is null) ||
-               (Settings.MusicSkip      && gameContent.MusicPath      is null) ||
-               (Settings.LogoSkip       && gameContent.LogoPath       is null) ||
-               (Settings.BackgroundSkip && gameContent.BackgroundPath is null);
+            => (!Settings.VideoSkip      || gameContent.VideoPath      != null) &&
+               (!Settings.MusicSkip      || gameContent.MusicPath      != null) &&
+               (!Settings.LogoSkip       || gameContent.LogoPath       != null) &&
+               (!Settings.BackgroundSkip || gameContent.BackgroundPath != null);
 
 
         private static readonly Random _Rng = new Random();

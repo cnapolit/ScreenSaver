@@ -29,7 +29,7 @@
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
             <Image Name="LogoImage" Stretch="Uniform" HorizontalAlignment="Left" VerticalAlignment="Bottom"
-               Grid.ColumnSpan="1" Grid.Column="0" Source="{Binding LogoPath}" Margin="20 0 0 0">
+               Grid.ColumnSpan="1" Grid.Column="0" Source="{Binding LogoPath}" Margin="25 0 0 10">
                 <Image.Effect>
                     <DropShadowEffect Direction="0" Color="#FF000000" ShadowDepth="0" BlurRadius="40" />
                 </Image.Effect>

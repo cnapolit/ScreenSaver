@@ -474,19 +474,27 @@ namespace ScreenSaver
             var duration = new Duration(TimeSpan.FromSeconds(1));
             var volume = Settings.Volume / 100.0;
 
-            var shouldPlayVideoAudio = ShouldPlayVideoAudio(gameContent.MusicPath);
             var oldContent = oldWindow.Content as ScreenSaverImage;
 
-            var newAudioPlayer = shouldPlayVideoAudio ? newContent.VideoPlayer : newContent.MusicPlayer;
-            var oldAudioPlayer = shouldPlayVideoAudio ? oldContent.VideoPlayer : oldContent.MusicPlayer;
-
-            var fadeInWindow  = CreateFade(newWindow,      UIElement.OpacityProperty,   duration, 0,      1);
-            var fadeOutWindow = CreateFade(oldWindow,      UIElement.OpacityProperty,   duration, 1,      0);
-            var fadeInAudio   = CreateFade(newAudioPlayer, MediaElement.VolumeProperty, duration, 0, volume);
-            var fadeOutAudio  = CreateFade(oldAudioPlayer, MediaElement.VolumeProperty, duration, volume, 0);
+            var fadeInWindow  = CreateFade(newWindow,              UIElement.OpacityProperty,   duration, 0,      1);
+            var fadeOutWindow = CreateFade(oldWindow,              UIElement.OpacityProperty,   duration, 1,      0);
+            var fadeInVideo   = CreateFade(newContent.VideoPlayer, MediaElement.VolumeProperty, duration, 0, volume);
+            var fadeOutVideo  = CreateFade(oldContent.VideoPlayer, MediaElement.VolumeProperty, duration, volume, 0);
+            var fadeInMusic   = CreateFade(newContent.MusicPlayer, MediaElement.VolumeProperty, duration, 0, volume);
+            var fadeoutMusic  = CreateFade(oldContent.MusicPlayer, MediaElement.VolumeProperty, duration, volume, 0);
 
             var storyBoard = new Storyboard
-            { Children = new TimelineCollection { fadeInWindow, fadeOutWindow, fadeInAudio, fadeOutAudio } };
+            { 
+                Children = new TimelineCollection 
+                {
+                    fadeInWindow,
+                    fadeOutWindow,
+                    fadeInVideo,
+                    fadeOutVideo,
+                    fadeInMusic,
+                    fadeoutMusic
+                }
+            };
 
             PlayVideo(newContent.VideoPlayer, gameContent.MusicPath);
             PlayAudio(newContent.MusicPlayer, gameContent.VideoPath);

@@ -2,6 +2,8 @@
 ScreenSaver is an extension to the Video Game Manager app <a href="https://github.com/JosefNemec/Playnite">Playnite</a>
 designed to display various content of Games as ScreenSavers. 
 
+[![ScreenSaver Demo](https://img.youtube.com/vi/chkAvzC7tQs/0.jpg)](https://www.youtube.com/watch?v=chkAvzC7tQs)
+
 This extension took inspiration in design & implementation from both Playnite Sounds and SplashScreen.
 # Notable Features
 * Automatically and manually display a dynamic ScreenSaver using existing resources

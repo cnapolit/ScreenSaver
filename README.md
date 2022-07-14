@@ -1,6 +1,6 @@
 # ScreenSaver Extension
 ScreenSaver is an extension to the Video Game Manager app <a href="https://github.com/JosefNemec/Playnite">Playnite</a>
-designed to display various content of Games as wallpapers. 
+designed to display various content of Games as ScreenSavers. 
 
 This extension took inspiration in design & implementation from both Playnite Sounds and SplashScreen.
 # Notable Features

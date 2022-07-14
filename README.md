@@ -6,7 +6,7 @@ This extension took inspiration in design & implementation from both Playnite So
 # Notable Features
 * Automatically and manually display a dynamic ScreenSaver using existing resources
   - Supports video, music, logos, and background images
-    - Only background is natively supported
+    - Only background images are natively supported
     - See <a href="https://github.com/cnapolit/ScreenSaver/new/main?readme=1#notable-features">Integrated Extensions</a> for details
   - Time between last input & ScreenSaver display can be set (Default: 60 seconds)
   - Time between transitions can be set (Default: 10 seconds)

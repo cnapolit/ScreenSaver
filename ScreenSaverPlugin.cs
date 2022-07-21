@@ -95,6 +95,7 @@ namespace ScreenSaver
                 }
             };
 
+            // I'm to lazy to type this out. Besides, what if it changes ¯\_(ツ)_/¯
             foreach (var key in _keys)
             {
                  _keyStates[key] = false;
@@ -115,10 +116,7 @@ namespace ScreenSaver
         {
             IsPolling = false;
             UnhookWindowsHookEx(_hookID);
-            if (!_screenSaverTask.Wait(1000))
-            {
-                logger.Error($"Unable to stop polling task on exit.");
-            }
+            StopPolling();
         }
 
         public override void OnGameStarting(OnGameStartingEventArgs args)
@@ -149,27 +147,31 @@ namespace ScreenSaver
 
         #region Polling
 
+        // I would rather rely on a timer, but that isn't ideal until a event handler for controllers is discovered.
+        // Otherwise, we would still need to poll for gamepad input to close the screen saver
+        // and I'm not polling and managing a timer together.
         private void PollForInput()
         {
             var controller = new Controller(UserIndex.One);
             int? oldPacketNumber = null;
+            int newPacketNumber = 0;
             _lastChangeTimeStamp = 0;
             _lastInputTimeStampInMs = Environment.TickCount;
 
             while (IsPolling)
             {
-                if (ControllerStateChanged(controller, oldPacketNumber, out var newPacketNumber))
+                if (ControllerStateChanged(controller, oldPacketNumber, ref newPacketNumber))
                 {
                     _lastInputTimeStampInMs = Environment.TickCount;
                     oldPacketNumber = newPacketNumber;
                 }
-                else if (KeyStateChanged())
+                else if (AKeyStateChanged())
                 {
                     _lastInputTimeStampInMs = Environment.TickCount;
                 }
 
-                var screenSaverIsRunning = TimeSinceStart is null;
-                if (screenSaverIsRunning)
+                var screenSaverIsNotRunning = TimeSinceStart is null;
+                if (screenSaverIsNotRunning)
                 {
                     var timeSinceLastInput = Environment.TickCount - _lastInputTimeStampInMs;
                     if (timeSinceLastInput > Settings.ScreenSaverInterval * 1000)
@@ -185,6 +187,7 @@ namespace ScreenSaver
                     Application.Current.Dispatcher.Invoke(() => firstScreenSaverWindow?.Close());
                 }
                 else if (Environment.TickCount - _lastChangeTimeStamp > Settings.GameTransitionInterval * 1000)
+                // Prevent cleanup & update from walking over one another
                 lock (screenSaverLock) if (TimeSinceStart != null)
                 {
                     _lastChangeTimeStamp = Environment.TickCount;
@@ -193,9 +196,11 @@ namespace ScreenSaver
             }
         }
 
-        private bool KeyStateChanged()
+        // A keyboard hook would be better, but not necessary until we can find an event or hook for controllers
+        private bool AKeyStateChanged()
         {
-            var keyChanged = false;
+            bool keyChanged = false;
+
             foreach(var key in _keys)
             {
                 var keyState = _keyStates[key];
@@ -205,21 +210,15 @@ namespace ScreenSaver
                     keyChanged = true;
                 }
             }
+
             return keyChanged;
         }
 
-        private static bool ControllerStateChanged(Controller controller, int? oldPacketNumber, out int newPacketNumber)
-        {
-            newPacketNumber = 0;
-            if (controller.IsConnected)
-            {
-                newPacketNumber = controller.GetState().PacketNumber;
-                return oldPacketNumber != newPacketNumber;
-            }
-            return false;
-        }
-
         public static bool IsKeyPushedDown(Keys key) => 0 != (GetAsyncKeyState(key) & 0x8000);
+
+        // Does not support DirectInput (Ps4/5, Switch, etc.). Doesn't matter until Playnite supports it.
+        private static bool ControllerStateChanged(Controller controller, int? oldPacketNumber, ref int newPacketNumber)
+            => controller.IsConnected && (newPacketNumber = controller.GetState().PacketNumber) != oldPacketNumber;
 
         public void StartPolling()
         {
@@ -247,14 +246,13 @@ namespace ScreenSaver
         public void StopPolling()
         {
             IsPolling = false;
-            if (_screenSaverTask?.Wait(100) ?? true)
-            {
-                logger.Info($"Stopped polling task.");
-            }
-            else
+            if (!_screenSaverTask?.Wait(100) ?? true)
             {
                 logger.Error($"Unable to stop polling task.");
             }
+
+            // Clean up just in case
+            firstScreenSaverWindow?.Close();
         }
 
         private bool ShouldPoll()
@@ -318,9 +316,14 @@ namespace ScreenSaver
 
         private void OnPowerModeChanged(object sender, PowerModeChangedEventArgs args)
         {
-            if (args.Mode == PowerModes.Resume)
+            switch (args.Mode)
             {
-                StartPolling();
+                case PowerModes.Resume:
+                    StartPolling();
+                    break;
+                case PowerModes.Suspend:
+                    StopPolling();
+                    break;
             }
         }
 
@@ -331,34 +334,20 @@ namespace ScreenSaver
         private void CreateScreenSaverWindow(Game game)
         {
             var gameContent = ConstructGameContent(game);
-
             firstScreenSaverWindow = CreateScreenSaverLayerWindow(gameContent);
-
-            var screenSaver = firstScreenSaverWindow.Content as ScreenSaverImage;
-
-            PlayVideo(screenSaver.VideoPlayer, gameContent.MusicPath);
-            PlayAudio(screenSaver.MusicPlayer, gameContent.VideoPath);
-        }
-
-        private void ManuallyStartScreenSaver(object _ = null)
-        {
-            TimeSinceStart = Environment.TickCount + 100;
-            _lastChangeTimeStamp = Environment.TickCount;
-            StartScreenSaver();
-
-            // Kick off the poll if it isn't running already
-            StartPolling();
+            firstScreenSaverWindow.Opacity = 1;
+            PlayMedia(firstScreenSaverWindow.Content, gameContent);
         }
 
         private void StartScreenSaver()
         {
-            GameEnumerator = GetGameContentEnumerator();
-
             var gameContent = GetNextGameContent();
 
             CreateScreenSaverWindows(gameContent);
         }
 
+
+        private static readonly Duration duration = new Duration(TimeSpan.FromSeconds(1));
 
         private void CreateScreenSaverWindows(GameContent gameContent)
         {
@@ -374,6 +363,8 @@ namespace ScreenSaver
                 WindowState = WindowState.Maximized,
                 WindowStartupLocation = WindowStartupLocation.CenterScreen,
                 Focusable = false,
+                AllowsTransparency = true,
+                Opacity = 0,
                 //Topmost = true
             };
             blackgroundWindow.Show();
@@ -381,7 +372,27 @@ namespace ScreenSaver
             secondScreenSaverWindow = CreateScreenSaverLayerWindow(null);
             firstScreenSaverWindow = CreateScreenSaverLayerWindow(gameContent);
 
-            PlayMedia(firstScreenSaverWindow.Content, gameContent.VideoPath, gameContent.MusicPath);
+            var newContent = firstScreenSaverWindow.Content as ScreenSaverImage;
+            var volume = Settings.Volume / 100.0;
+
+            var fadeInBlack  = CreateFade(blackgroundWindow,       UIElement.OpacityProperty,  duration, 0,      1);
+            var fadeInWindow = CreateFade(firstScreenSaverWindow, UIElement.OpacityProperty,   duration, 0,      1);
+            var fadeInVideo  = CreateFade(newContent.VideoPlayer, MediaElement.VolumeProperty, duration, 0, volume);
+            var fadeInMusic  = CreateFade(newContent.MusicPlayer, MediaElement.VolumeProperty, duration, 0, volume);
+
+            var storyBoard = new Storyboard
+            {
+                Children = new TimelineCollection
+                {
+                    fadeInBlack,
+                    fadeInWindow,
+                    fadeInVideo,
+                    fadeInMusic
+                }
+            };
+
+            storyBoard.Begin();
+            PlayMedia(firstScreenSaverWindow.Content, gameContent);
         }
 
         private Window CreateScreenSaverLayerWindow(GameContent gameContent)
@@ -396,6 +407,7 @@ namespace ScreenSaver
                 // Window is set to topmost to make sure another window won't show over it
                 //Topmost = true,
                 AllowsTransparency = true,
+                Opacity = 0,
                 Background = Brushes.Transparent
             };
 
@@ -471,9 +483,7 @@ namespace ScreenSaver
                 newContent.MusicPlayer.Source = gameContent.MusicPath is null ? null: new Uri(gameContent.MusicPath);
             }
 
-            var duration = new Duration(TimeSpan.FromSeconds(1));
             var volume = Settings.Volume / 100.0;
-
             var oldContent = oldWindow.Content as ScreenSaverImage;
 
             var fadeInWindow  = CreateFade(newWindow,              UIElement.OpacityProperty,   duration, 0,      1);
@@ -504,7 +514,7 @@ namespace ScreenSaver
 
         private GameContent GetNextGameContent()
         {
-                if (!GameEnumerator.MoveNext())
+                if (!GameEnumerator?.MoveNext() ?? true)
                 {
                     // Reset throws NotImplementedException as of 7/5/22
                     GameEnumerator = GetGameContentEnumerator();
@@ -559,11 +569,11 @@ namespace ScreenSaver
 
         #region Media
 
-        private void PlayMedia(object content, string videoPath, string musicPath)
+        private void PlayMedia(object content, GameContent gameContent)
         {
             var screenSaver = content as ScreenSaverImage;
-            PlayVideo(screenSaver.VideoPlayer, musicPath);
-            PlayAudio(screenSaver.MusicPlayer, videoPath);
+            PlayVideo(screenSaver.VideoPlayer, gameContent.MusicPath);
+            PlayAudio(screenSaver.MusicPlayer, gameContent.VideoPath);
         }
 
         private void PlayVideo(MediaElement videoPlayer, string musicPath)
@@ -666,7 +676,15 @@ namespace ScreenSaver
 
         #region Main Menu
 
+        private void ManuallyStartScreenSaver(object _ = null)
+        {
+            TimeSinceStart = Environment.TickCount + 100;
+            _lastChangeTimeStamp = Environment.TickCount;
+            StartScreenSaver();
 
+            // Kick off the poll if it isn't running already
+            StartPolling();
+        }
 
         #endregion
 

@@ -24,9 +24,8 @@ namespace ScreenSaver
         public uint Volume { get; set; } = 50;
         public AudioSource AudioSource { get; set; } = AudioSource.Music;
         public PlayState PlayState { get; set; } = PlayState.FullScreen;
-        public uint GameTransitionInterval { get; set; } = 10;
-        public uint ScreenSaverInterval { get; set; } = 10;
-        public uint PollInterval { get; set; } = 3;
+        public uint GameTransitionInterval { get; set; } = 20;
+        public uint ScreenSaverInterval { get; set; } = 90;
         public bool PlayBackup { get; set; } = false;
         public bool BackgroundSkip { get; set; } = true;
         public bool VideoSkip { get; set; } = false;

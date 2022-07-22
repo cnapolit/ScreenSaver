@@ -486,12 +486,12 @@ namespace ScreenSaver
             var volume = Settings.Volume / 100.0;
             var oldContent = oldWindow.Content as ScreenSaverImage;
 
-            var fadeInWindow  = CreateFade(newWindow,              UIElement.OpacityProperty,   duration, 0,      1);
-            var fadeOutWindow = CreateFade(oldWindow,              UIElement.OpacityProperty,   duration, 1,      0);
-            var fadeInVideo   = CreateFade(newContent.VideoPlayer, MediaElement.VolumeProperty, duration, 0, volume);
-            var fadeOutVideo  = CreateFade(oldContent.VideoPlayer, MediaElement.VolumeProperty, duration, volume, 0);
-            var fadeInMusic   = CreateFade(newContent.MusicPlayer, MediaElement.VolumeProperty, duration, 0, volume);
-            var fadeoutMusic  = CreateFade(oldContent.MusicPlayer, MediaElement.VolumeProperty, duration, volume, 0);
+            var fadeInWindow  = CreateFade(newWindow,                 UIElement. OpacityProperty, duration, 0,      1);
+            var fadeOutWindow = CreateFade(oldWindow,                 UIElement. OpacityProperty, duration, 1,      0);
+            var fadeInVideo   = CreateFade(newContent.VideoPlayer, MediaElement.  VolumeProperty, duration, 0, volume);
+            var fadeOutVideo  = CreateFade(oldContent.VideoPlayer, MediaElement.  VolumeProperty, duration, volume, 0);
+            var fadeInMusic   = CreateFade(newContent.MusicPlayer, MediaElement.  VolumeProperty, duration, 0, volume);
+            var fadeoutMusic  = CreateFade(oldContent.MusicPlayer, MediaElement.  VolumeProperty, duration, volume, 0);
 
             var storyBoard = new Storyboard
             { 
@@ -506,10 +506,10 @@ namespace ScreenSaver
                 }
             };
 
+            storyBoard.Begin();
+
             PlayVideo(newContent.VideoPlayer, gameContent.MusicPath);
             PlayAudio(newContent.MusicPlayer, gameContent.VideoPath);
-
-            storyBoard.Begin();
         }
 
         private GameContent GetNextGameContent()
@@ -538,6 +538,8 @@ namespace ScreenSaver
 
             lock (screenSaverLock)
             {
+                first = false;
+
                 blackgroundWindow?.Close();
                 var window = sender as Window;
 
@@ -578,26 +580,28 @@ namespace ScreenSaver
 
         private void PlayVideo(MediaElement videoPlayer, string musicPath)
         {
-            if (!Settings.IncludeVideo) return;
-
-            if (ShouldPlayVideoAudio(musicPath))
+            if (!Settings.IncludeVideo)
             {
-                videoPlayer.IsMuted = false;
+                videoPlayer.Stop();
             }
-
-            videoPlayer.Play();
+            else
+            {
+                videoPlayer.IsMuted = ShouldPlayVideoAudio(musicPath);
+                videoPlayer.Play();
+            }    
         }
 
         private void PlayAudio(MediaElement musicPlayer, string videoPath)
         {
-            if (Settings.AudioSource == AudioSource.Music || (Settings.PlayBackup && videoPath is null))
-            {
-                musicPlayer.Play();
-            }
+            if   (ShouldPlayMusic(videoPath)) musicPlayer.Play();
+            else                              musicPlayer.Stop();
         }
 
-        private bool ShouldPlayVideoAudio(string musicPath)
-            => Settings.AudioSource == AudioSource.Video || (Settings.PlayBackup && musicPath is null);
+        private bool ShouldPlayMusic(string videoPath)      => ShouldPlayAudio(AudioSource.Music, videoPath);
+        private bool ShouldPlayVideoAudio(string musicPath) => ShouldPlayAudio(AudioSource.Video, musicPath);
+
+        private bool ShouldPlayAudio(AudioSource source, string otherAudioPath)
+            => Settings.AudioSource == source || (Settings.PlayBackup && otherAudioPath is null);
 
         private DoubleAnimation CreateFade(DependencyObject window, object property, Duration duration, double from, double to)
         {
@@ -760,7 +764,6 @@ namespace ScreenSaver
                 PlayniteApi.ApplicationSettings.Fullscreen.IsMusicMuted = false;
             }
         }
-
 
         private class GameContent
         {

@@ -3,9 +3,8 @@ using System;
 using System.IO;
 using System.Windows;
 using System.Windows.Markup;
-using ScreenSaver.Common.Constants;
 
-namespace ScreenSaver
+namespace ScreenSaver.Services.UI
 
 {
 

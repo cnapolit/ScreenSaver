@@ -86,19 +86,40 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Localization.cs" />
-    <Compile Include="EnumConverter.cs" />
+    <Compile Include="Common\Constants\Imports.cs" />
+    <Compile Include="Common\Imports\Kernel32.cs" />
+    <Compile Include="Common\Imports\User32.cs" />
+    <Compile Include="Services\UI\Localization\Localization.cs" />
+    <Compile Include="Services\UI\EnumConverter\EnumConverter.cs" />
     <Compile Include="Common\Constants\Resource.cs" />
-    <Compile Include="ScreenSaverImage.xaml.cs">
+    <Compile Include="Models\Enums\AudioSource.cs" />
+    <Compile Include="Models\Enums\PlayState.cs" />
+    <Compile Include="Models\ScreenSaverSettings.cs" />
+    <Compile Include="Models\GameContent\GameContent.cs" />
+    <Compile Include="Models\GameContent\GameContentFactory.cs" />
+    <Compile Include="Models\GameContent\IGameContentFactory.cs" />
+    <Compile Include="Models\Imports\MouseMessages.cs" />
+    <Compile Include="Models\Imports\MsLLHook.cs" />
+    <Compile Include="Models\Imports\Point.cs" />
+    <Compile Include="Views\Layouts\ScreenSaverImage.xaml.cs">
       <DependentUpon>ScreenSaverImage.xaml</DependentUpon>
     </Compile>
     <Compile Include="ScreenSaverPlugin.cs" />
-    <Compile Include="ScreenSaverSettings.cs" />
-    <Compile Include="ScreenSaverSettingsView.xaml.cs">
+    <Compile Include="Views\Models\ScreenSaverSettingsViewModel.cs" />
+    <Compile Include="Views\Layouts\ScreenSaverSettingsView.xaml.cs">
       <DependentUpon>ScreenSaverSettingsView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ScreenSaverViewModel.cs" />
+    <Compile Include="Views\Models\ScreenSaverViewModel.cs" />
+    <Compile Include="Services\IScreenSaverSettings.cs" />
+    <Compile Include="Services\State\Poll\IPollManager.cs" />
+    <Compile Include="Services\State\Poll\PollManager.cs" />
+    <Compile Include="Services\State\ScreenSaver\IScreenSaverManager.cs" />
+    <Compile Include="Services\State\ScreenSaver\ScreenSaverManager.cs" />
+    <Compile Include="Services\UI\Menus\IMenuManager.cs" />
+    <Compile Include="Services\UI\Menus\MenuManager.cs" />
+    <Compile Include="Services\UI\Windows\IWindowsManager.cs" />
+    <Compile Include="Services\UI\Windows\WindowsManager.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="extension.yaml">
@@ -261,11 +282,11 @@
       <SubType>Designer</SubType>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <Page Include="ScreenSaverImage.xaml">
+    <Page Include="Views\Layouts\ScreenSaverImage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="ScreenSaverSettingsView.xaml">
+    <Page Include="Views\Layouts\ScreenSaverSettingsView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

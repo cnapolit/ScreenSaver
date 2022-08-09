@@ -2,7 +2,7 @@
 using System.Windows;
 using System.Windows.Controls;
 
-namespace ScreenSaver
+namespace ScreenSaver.Views.Layouts
 {
     /// <summary>
     /// Interaction logic for ScreenSaver.xaml
@@ -10,15 +10,7 @@ namespace ScreenSaver
     public partial class ScreenSaverImage : UserControl
     {
         public Window ParentWindow { get; set; }
-        public ScreenSaverImage()
-        {
-            InitializeComponent();
-        }
-
-        private void Close(object sender, EventArgs e)
-        {
-            ParentWindow?.Close();
-            return;
-        }
+        public ScreenSaverImage() => InitializeComponent();
+        private void Close(object sender, EventArgs e) => ParentWindow?.Close();
     }
 }

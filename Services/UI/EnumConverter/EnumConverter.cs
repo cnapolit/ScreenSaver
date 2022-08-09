@@ -1,11 +1,12 @@
-﻿using System;
+﻿using ScreenSaver.Models.Enums;
+using System;
 using System.Globalization;
 using System.Windows.Data;
 using System.Windows.Markup;
 
 //TODO: Properly investigate way to make generic EnumConverter<t> work with wpf/xaml
 // Possible solution may involve factory: https://stackoverflow.com/questions/8235421/how-do-i-set-wpf-xaml-forms-design-datacontext-to-class-that-uses-generic-type/8235459#8235459
-namespace ScreenSaver
+namespace ScreenSaver.Services.UI
 {
     public class AudioSourceConverter : BaseValueConverter<AudioSourceConverter>
     {

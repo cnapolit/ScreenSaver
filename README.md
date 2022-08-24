@@ -10,8 +10,8 @@ This extension took inspiration in design & implementation from both Playnite So
   - Supports video, music, logos, and background images
     - Only background images are natively supported
     - See <a href="https://github.com/cnapolit/ScreenSaver/new/main?readme=1#notable-features">Integrated Extensions</a> for details
-  - Time between last input & ScreenSaver display can be set (Default: 60 seconds)
-  - Time between transitions can be set (Default: 10 seconds)
+  - Time between last input & ScreenSaver display can be set (Default: 90 seconds)
+  - Time between transitions can be set (Default: 20 seconds)
   - Supported forms of input include: Mouse, Keyboard, & Gamepad
 * Preview ScreenSavers on a per game basis
 # Integrated Extensions

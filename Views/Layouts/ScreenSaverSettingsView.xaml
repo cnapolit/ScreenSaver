@@ -48,7 +48,7 @@
                     <Label Name="PercentageSign" Content="%"/>
                 </StackPanel>
                 <Slider   Grid.Row="0" Grid.Column="1" Name="VolumeSlider" Maximum="100" Value="{Binding Settings.Volume}"  AutoToolTipPlacement="TopLeft" VerticalAlignment="Center"/>
-                <Label    Grid.Row="2"                 Name="AudioSourceLabel" Content="{DynamicResource SETTING_AUDIO_SOURCE}" d:LayoutOverrides="VerticalAlignment"/>
+                <Label    Grid.Row="2"                 Name="AudioSourceLabel" Content="{DynamicResource SETTINGS_AUDIO_SOURCE}" d:LayoutOverrides="VerticalAlignment"/>
                 <ComboBox Grid.Row="2" Grid.Column="1" Name="AudioSourceCombo" SelectedIndex="{Binding Settings.AudioSource, Converter={e:AudioSourceConverter}}" Height="20">
                     <ComboBoxItem Content="{DynamicResource SETTINGS_ENUM_AUDIO_SOURCE_NONE}"/>
                     <ComboBoxItem Content="{DynamicResource SETTINGS_ENUM_AUDIO_SOURCE_VIDEO}"/>

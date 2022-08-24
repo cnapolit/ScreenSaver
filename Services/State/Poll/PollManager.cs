@@ -29,18 +29,20 @@ namespace ScreenSaver.Services.State.Poll
             Where(k => !badKeys.Contains(k)).
             ToList();
 
-        private static          IntPtr                  _hookID;
+        private static          IntPtr                                     _hookID;
 
-        private static          Task                    _screenSaverTask;
+        private static          Task                              _screenSaverTask;
 
-        private static          int?                       _lastInputTimeStampInMs;
-        private static          int                     _lastScreenChangeTimeStamp;
+        private static          int                        _lastInputTimeStampInMs;
+        private static          int                     _lastScreenChangeTimeStampInMs;
 
         private        readonly IDictionary<Keys, bool>                 _keyStates;
         private        readonly IWindowsManager                _screenSaverManager;
 
         private                 bool                                    _isPolling;
         private                 int?                               _timeSinceStart;
+        private                 uint                             _gameIntervalInMs;
+        private                 uint                      _ScreenSaverIntervalInMs;
 
         private                 ScreenSaverSettings                      _settings;
 
@@ -48,10 +50,10 @@ namespace ScreenSaver.Services.State.Poll
 
         public PollManager(ScreenSaverSettings settings, IWindowsManager screenSaverManager)
         {
-            _settings           =                     settings;
-            _screenSaverManager =           screenSaverManager;
+            Update(settings);
+            _screenSaverManager = screenSaverManager;
             
-            // I'm to lazy to type this out. Besides, what if it changes ¯\_(ツ)_/¯
+            // I'm too lazy to type this out. Besides, what if it changes ¯\_(ツ)_/¯
             _keyStates          = new Dictionary<Keys, bool>();
             foreach (var key in _keys)
             {
@@ -63,11 +65,11 @@ namespace ScreenSaver.Services.State.Poll
 
         #region Interface
 
-        public void SetupPolling      (                            ) =>  Setup (           );
-        public void StartPolling      (            bool immediately) =>  Start (immediately);
-        public void PausePolling      (                            ) =>  Pause (           );
-        public void StopPolling       (                            ) =>   Stop (           );
-        public void UpdateSettings    (ScreenSaverSettings settings) => _settings = settings;
+        public void SetupPolling      (                            ) =>  Setup  (           );
+        public void StartPolling      (            bool immediately) =>  Start  (immediately);
+        public void PausePolling      (                            ) =>  Pause  (           );
+        public void StopPolling       (                            ) =>   Stop  (           );
+        public void UpdateSettings    (ScreenSaverSettings settings) =>  Update (   settings);
 
         #endregion
 
@@ -116,7 +118,7 @@ namespace ScreenSaver.Services.State.Poll
                     if (startImmediately)
                     {
                         _timeSinceStart            = Environment.TickCount + 100;
-                        _lastScreenChangeTimeStamp = Environment.TickCount;
+                        _lastScreenChangeTimeStampInMs = Environment.TickCount;
                         _screenSaverManager.StartScreenSaver();
                     }
                     break;
@@ -146,7 +148,7 @@ namespace ScreenSaver.Services.State.Poll
             };
 
             var packetNumbers = new int?[4];
-            _lastScreenChangeTimeStamp = 0;
+            _lastScreenChangeTimeStampInMs = 0;
             _lastInputTimeStampInMs = startImediately ? 0 : Environment.TickCount;
 
             while (_isPolling)
@@ -176,31 +178,29 @@ namespace ScreenSaver.Services.State.Poll
         private void UpdateScreenSaverState()
         {
             var screenSaverIsNotRunning = _timeSinceStart is null;
-            if (screenSaverIsNotRunning)
+
+            if (screenSaverIsNotRunning && TimeToStart())
             {
-                var timeSinceLastInput = Environment.TickCount - _lastInputTimeStampInMs;
-                if (timeSinceLastInput > _settings.ScreenSaverInterval)
-                {
-                    Application.Current.Dispatcher.Invoke(_screenSaverManager.StartScreenSaver);
-                    _timeSinceStart = Environment.TickCount + 100;
-                    _lastScreenChangeTimeStamp = Environment.TickCount;
-                }
+                // WPF Requires The Parent Thread When Interacting UI
+                Application.Current.Dispatcher.Invoke(_screenSaverManager.StartScreenSaver);
+                _timeSinceStart = Environment.TickCount + 100;
+                _lastScreenChangeTimeStampInMs = Environment.TickCount;
+                
             }
             else if (_lastInputTimeStampInMs > _timeSinceStart)
             {
                 _timeSinceStart = null;
                 Application.Current.Dispatcher.Invoke(_screenSaverManager.StopScreenSaver);
             }
-            else
+            else if (!screenSaverIsNotRunning && TimeToUpdate())
             {
-                var timeSinceLastTransition = Environment.TickCount - _lastScreenChangeTimeStamp;
-                if (timeSinceLastTransition > _settings.GameTransitionInterval && !screenSaverIsNotRunning)
-                {
-                    _lastScreenChangeTimeStamp = Environment.TickCount;
-                    Application.Current.Dispatcher.Invoke(_screenSaverManager.UpdateScreenSaver);
-                }
+                _lastScreenChangeTimeStampInMs = Environment.TickCount;
+                Application.Current.Dispatcher.Invoke(_screenSaverManager.UpdateScreenSaver);
             }
         }
+
+        private bool  TimeToStart() => Environment.TickCount -        _lastInputTimeStampInMs > _ScreenSaverIntervalInMs;
+        private bool TimeToUpdate() => Environment.TickCount - _lastScreenChangeTimeStampInMs >        _gameIntervalInMs;
 
         // A keyboard hook would be better, but not necessary until we can find an event or hook for controllers
         private bool AKeyStateChanged()
@@ -244,6 +244,17 @@ namespace ScreenSaver.Services.State.Poll
         {
             UnhookWindowsHookEx(_hookID);
             Pause();
+        }
+
+        #endregion
+
+        #region UpdateSettings
+
+        private void Update(ScreenSaverSettings settings)
+        {
+            _settings                =                                 settings;
+            _gameIntervalInMs        = _settings. GameTransitionInterval * 1000;
+            _ScreenSaverIntervalInMs = _settings.    ScreenSaverInterval * 1000;
         }
 
         #endregion

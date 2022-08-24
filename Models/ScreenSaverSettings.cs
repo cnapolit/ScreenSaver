@@ -6,10 +6,8 @@ namespace ScreenSaver.Models
 {
     public class ScreenSaverSettings : ObservableObject
     {
-        private uint gameTransitionInterval = 20000;
-        public uint GameTransitionInterval { get => gameTransitionInterval; set => gameTransitionInterval = value * 1000; }
-        private uint screenSaverInterval = 90000;
-        public uint ScreenSaverInterval { get => screenSaverInterval; set => screenSaverInterval = value * 1000; }
+        public uint GameTransitionInterval { get; set; } = 20;
+        public uint ScreenSaverInterval { get; set; } = 90;
         public uint Volume { get; set; } = 50;
         public AudioSource AudioSource { get; set; } = AudioSource.Music;
         public PlayState PlayState { get; set; } = PlayState.FullScreen;

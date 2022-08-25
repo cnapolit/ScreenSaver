@@ -13,6 +13,7 @@ This extension took inspiration in design & implementation from both Playnite So
   - Time between last input & ScreenSaver display can be set (Default: 90 seconds)
   - Time between transitions can be set (Default: 20 seconds)
   - Supported forms of input include: Mouse, Keyboard, & Gamepad
+    - DirectInput (PS4/5, Switch) devices are not supported until Release 2.0
 * Preview ScreenSavers on a per game basis
 # Integrated Extensions
 * <a href="https://github.com/joyrider3774/PlayniteSound">Playnite Sounds</a>

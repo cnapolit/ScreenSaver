@@ -87,10 +87,14 @@ namespace ScreenSaver.Services.State.ScreenSaver
 
         private void Stop()
         {
-            SystemEvents .PowerModeChanged                -= OnPowerModeChanged;
-            Application  .Current.Deactivated             -= OnApplicationDeactivate;
-            Application  .Current.Activated               -= OnApplicationActivate;
-            Application  .Current.MainWindow.StateChanged -= OnWindowStateChanged;
+            SystemEvents .PowerModeChanged    -= OnPowerModeChanged;
+            Application  .Current.Deactivated -= OnApplicationDeactivate;
+            Application  .Current.Activated   -= OnApplicationActivate;
+
+            if (Application.Current.MainWindow != null)
+            {
+                Application.Current.MainWindow.StateChanged -= OnWindowStateChanged;
+            }
 
             _pollManager.StopPolling();
         }

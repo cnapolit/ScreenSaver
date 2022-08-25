@@ -29,22 +29,22 @@ namespace ScreenSaver.Services.State.Poll
             Where(k => !badKeys.Contains(k)).
             ToList();
 
-        private static          IntPtr                                     _hookID;
+        private static          IntPtr                                         _hookID;
 
-        private static          Task                              _screenSaverTask;
+        private static          Task                                  _screenSaverTask;
 
-        private static          int                        _lastInputTimeStampInMs;
+        private static          int                            _lastInputTimeStampInMs;
         private static          int                     _lastScreenChangeTimeStampInMs;
 
-        private        readonly IDictionary<Keys, bool>                 _keyStates;
-        private        readonly IWindowsManager                _screenSaverManager;
+        private        readonly IDictionary<Keys, bool>                     _keyStates;
+        private        readonly IWindowsManager                    _screenSaverManager;
 
-        private                 bool                                    _isPolling;
-        private                 int?                               _timeSinceStart;
-        private                 uint                             _gameIntervalInMs;
-        private                 uint                      _ScreenSaverIntervalInMs;
+        private                 bool                                        _isPolling;
+        private                 int?                                   _timeSinceStart;
+        private                 uint                                 _gameIntervalInMs;
+        private                 uint                          _ScreenSaverIntervalInMs;
 
-        private                 ScreenSaverSettings                      _settings;
+        private                 ScreenSaverSettings                          _settings;
 
         #endregion
 
@@ -54,11 +54,8 @@ namespace ScreenSaver.Services.State.Poll
             _screenSaverManager = screenSaverManager;
             
             // I'm too lazy to type this out. Besides, what if it changes ¯\_(ツ)_/¯
-            _keyStates          = new Dictionary<Keys, bool>();
-            foreach (var key in _keys)
-            {
-                _keyStates[key] = false;
-            }
+            _keyStates = new Dictionary<Keys, bool>();
+            foreach (var key in _keys) _keyStates[key] = false;
         }
 
         #endregion
@@ -179,7 +176,7 @@ namespace ScreenSaver.Services.State.Poll
         {
             var screenSaverIsNotRunning = _timeSinceStart is null;
 
-            if (screenSaverIsNotRunning && TimeToStart())
+            if (screenSaverIsNotRunning && TimeToStart)
             {
                 // WPF Requires The Parent Thread When Interacting UI
                 Application.Current.Dispatcher.Invoke(_screenSaverManager.StartScreenSaver);
@@ -192,15 +189,15 @@ namespace ScreenSaver.Services.State.Poll
                 _timeSinceStart = null;
                 Application.Current.Dispatcher.Invoke(_screenSaverManager.StopScreenSaver);
             }
-            else if (!screenSaverIsNotRunning && TimeToUpdate())
+            else if (!screenSaverIsNotRunning && TimeToUpdate)
             {
                 _lastScreenChangeTimeStampInMs = Environment.TickCount;
                 Application.Current.Dispatcher.Invoke(_screenSaverManager.UpdateScreenSaver);
             }
         }
 
-        private bool  TimeToStart() => Environment.TickCount -        _lastInputTimeStampInMs > _ScreenSaverIntervalInMs;
-        private bool TimeToUpdate() => Environment.TickCount - _lastScreenChangeTimeStampInMs >        _gameIntervalInMs;
+        private bool  TimeToStart => Environment.TickCount -        _lastInputTimeStampInMs > _ScreenSaverIntervalInMs;
+        private bool TimeToUpdate => Environment.TickCount - _lastScreenChangeTimeStampInMs >        _gameIntervalInMs;
 
         // A keyboard hook would be better, but not necessary until we can find an event or hook for controllers
         private bool AKeyStateChanged()

@@ -281,7 +281,7 @@ namespace ScreenSaver.Services.UI.Windows
                 WindowStartupLocation = WindowStartupLocation.CenterScreen,
                 Focusable = true,
                 // Window is set to topmost to make sure another window won't show over it
-                //Topmost = true,
+                Topmost = true,
                 AllowsTransparency = true,
                 Opacity = 0,
                 Background = Brushes.Transparent

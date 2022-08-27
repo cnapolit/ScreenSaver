@@ -25,5 +25,6 @@ This extension took inspiration in design & implementation from both Playnite So
 # Contributing
 If there's a feature or bug you want to work on for this Extension, let me know!
 # Supporting
-There's this site, I guess. I do drink coffee, but who knows what I'll spend this on ¯\_(ツ)_/¯
+There's this site, I guess. I do drink coffee, but who knows what I'll spend this on ¯\\\_(ツ)\_/¯
+
 <a href='https://ko-fi.com/justrollinc' target='_blank'><img height='36' style='border:0px;height:36px;' src='https://cdn.ko-fi.com/cdn/kofi2.png?v=3' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a>

@@ -260,9 +260,9 @@ namespace ScreenSaver.Services.UI.Windows
 
         private void Preview(Game game, Action onCloseCallBack)
         {
-            firstScreenSaverWindow.Closed += (_, __) => onCloseCallBack();
             var gameContent = _gameContentFactory.ConstructGameContent(game);
             firstScreenSaverWindow = CreateScreenSaverLayerWindow(gameContent);
+            firstScreenSaverWindow.Closed += (_, __) => onCloseCallBack();
             firstScreenSaverWindow.Opacity = 1;
             PlayMedia(firstScreenSaverWindow.Content, gameContent);
         }
@@ -332,10 +332,10 @@ namespace ScreenSaver.Services.UI.Windows
 
         private IEnumerator<GameContent> GetGameContentEnumerator()
             => _playniteApi.Database.Games.
-            Select(_gameContentFactory.ConstructGameContent).
-            Where(ValidGameContent).
-            OrderBy(_ => _rng.Next()).
-            GetEnumerator();
+                Select(_gameContentFactory.ConstructGameContent).
+                Where(ValidGameContent).
+                OrderBy(_ => _rng.Next()).
+                GetEnumerator();
 
         private bool ValidGameContent(GameContent gameContent)
             => (!_settings.VideoSkip      || gameContent.VideoPath      != null) &&

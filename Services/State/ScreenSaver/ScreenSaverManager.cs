@@ -12,6 +12,8 @@ namespace ScreenSaver.Services.State.ScreenSaver
 {
     internal class ScreenSaverManager : IScreenSaverManager
     {
+        #region Infrastructure
+
         private readonly IPlayniteAPI           _playniteApi;
         private readonly IPollManager           _pollManager;
         private readonly IWindowsManager     _windowsManager;
@@ -22,9 +24,11 @@ namespace ScreenSaver.Services.State.ScreenSaver
             _playniteApi = playniteApi;
             _settings    =    settings;
 
-            _windowsManager = new WindowsManager (playniteApi, settings,  OnStopCallBack);
+            _windowsManager = new WindowsManager (playniteApi, settings,  UpdatePollState);
             _pollManager    = new PollManager    (             settings, _windowsManager);
         }
+
+        #endregion
 
         #region Interface
 
@@ -76,8 +80,8 @@ namespace ScreenSaver.Services.State.ScreenSaver
         {
             if (ignoreCheck || _settings.DisableWhilePlaying)
             {
-                _pollManager.    PausePolling    ();
-                _windowsManager. StopScreenSaver ();
+                _pollManager    .PausePolling    ();
+                _windowsManager .StopScreenSaver ();
             }
         }
 
@@ -115,14 +119,11 @@ namespace ScreenSaver.Services.State.ScreenSaver
 
         private void Update(ScreenSaverSettings settings)
         {
-            _windowsManager. UpdateSettings(settings);
-            _pollManager.    UpdateSettings(settings);
+            _windowsManager .UpdateSettings(settings);
+            _pollManager    .UpdateSettings(settings);
 
-            if (settings.PlayState != _settings.PlayState) switch (settings.PlayState)
-            {
-                case    PlayState.Never: _pollManager.PausePolling(     ); break;
-                default                : _pollManager.StartPolling(false); break;
-            }
+            // Re-evaluate current poll state
+            UpdatePollState();
 
             _settings = settings;
         }
@@ -131,7 +132,7 @@ namespace ScreenSaver.Services.State.ScreenSaver
 
         #region Helpers
 
-        private void OnStopCallBack()
+        private void UpdatePollState()
         {
             if   (ShouldPoll()) _pollManager.StartPolling(false);
             else                _pollManager.PausePolling(     );
@@ -155,8 +156,8 @@ namespace ScreenSaver.Services.State.ScreenSaver
             if (_settings.PauseOnDeactivate) switch (Application.Current?.MainWindow?.WindowState)
             {
                 case WindowState.Normal   :
-                case WindowState.Maximized: _pollManager.StartPolling(false); break;
-                case WindowState.Minimized: _pollManager.PausePolling(     ); break;
+                case WindowState.Maximized: Start(false); break;
+                case WindowState.Minimized: Pause( true); break;
             }
         }
 
@@ -167,15 +168,15 @@ namespace ScreenSaver.Services.State.ScreenSaver
 
         private void OnApplicationActivate(object sender, EventArgs e)
         {
-            if (_settings.PauseOnDeactivate) _pollManager.StartPolling(false);
+            if (_settings.PauseOnDeactivate) Start(false);
         }
 
         private void OnPowerModeChanged(object sender, PowerModeChangedEventArgs args)
         {
             switch (args.Mode)
             {
-                case PowerModes.Resume : _pollManager.StartPolling(false); break;
-                case PowerModes.Suspend: _pollManager.PausePolling(     ); break;
+                case PowerModes.Resume : Start(false); break;
+                case PowerModes.Suspend: Pause( true); break;
             }
         }
 

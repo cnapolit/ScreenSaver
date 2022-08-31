@@ -151,6 +151,7 @@ namespace ScreenSaver.Services.State.Poll
             while (_isPolling)
             {
                 UpdateScreenSaverState();
+                Task.Delay(16);
 
                 if (AKeyStateChanged())
                 {

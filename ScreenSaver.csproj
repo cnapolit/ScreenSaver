@@ -40,6 +40,9 @@
     <ErrorReport>prompt</ErrorReport>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>packages\Newtonsoft.Json.13.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="Playnite.SDK, Version=6.2.2.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>packages\PlayniteSDK.6.2.2\lib\net462\Playnite.SDK.dll</HintPath>
     </Reference>
@@ -86,9 +89,14 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Common\Constants\App.cs" />
     <Compile Include="Common\Constants\Imports.cs" />
+    <Compile Include="Common\Extensions\IEnumerableExtensions.cs" />
     <Compile Include="Common\Imports\Kernel32.cs" />
     <Compile Include="Common\Imports\User32.cs" />
+    <Compile Include="Models\GameGroup.cs" />
+    <Compile Include="Services\GameGroupManager\GameGroupManager.cs" />
+    <Compile Include="Services\GameGroupManager\IGameGroupManager.cs" />
     <Compile Include="Services\UI\Localization\Localization.cs" />
     <Compile Include="Services\UI\EnumConverter\EnumConverter.cs" />
     <Compile Include="Common\Constants\Resource.cs" />

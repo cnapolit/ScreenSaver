@@ -28,6 +28,7 @@ namespace ScreenSaver.Services.UI.Windows
 
         private        readonly IPlayniteAPI               _playniteApi;
         private        readonly IGameContentFactory _gameContentFactory;
+        private        readonly IGameGroupManager     _gameGroupManager;
         private        readonly Action                  _onStopCallBack;
 
         private                 bool showFirstWindow;
@@ -41,12 +42,12 @@ namespace ScreenSaver.Services.UI.Windows
 
         #endregion
 
-        public WindowsManager(IPlayniteAPI playniteApi, ScreenSaverSettings settings, Action onStopCallBack)
+        public WindowsManager(IPlayniteAPI playniteApi, IGameGroupManager gameGroupManager, ScreenSaverSettings settings, Action onStopCallBack)
         {
-            _settings       =       settings;
-            _playniteApi    =    playniteApi;
-            _onStopCallBack = onStopCallBack;
-
+            _settings           =                            settings;
+            _playniteApi        =                         playniteApi;
+            _onStopCallBack     =                      onStopCallBack;
+            _gameGroupManager   =                    gameGroupManager;
             _gameContentFactory = new GameContentFactory(playniteApi);
         }
 
@@ -68,6 +69,14 @@ namespace ScreenSaver.Services.UI.Windows
 
         private void Start()
         {
+            if (!InitializeEnumerator())
+            {
+                logger.Warn("No games found while starting ScreenSaver");
+                return;
+            }
+
+            var gameContent = GameEnumerator.Current;
+
             firstScreenSaverWindow?.Close();
             secondScreenSaverWindow?.Close();
             MuteBackgroundMusic();
@@ -85,8 +94,6 @@ namespace ScreenSaver.Services.UI.Windows
                 //Topmost = true
             };
             blackgroundWindow.Show();
-
-            var gameContent = GetNextGameContent();
 
             secondScreenSaverWindow = CreateScreenSaverLayerWindow(null);
             firstScreenSaverWindow  = CreateScreenSaverLayerWindow(gameContent);
@@ -180,13 +187,13 @@ namespace ScreenSaver.Services.UI.Windows
         private void Update() { lock (screenSaverLock) { UpdateWindows(); } }
         private void UpdateWindows()
         {
-            if (firstScreenSaverWindow is null) return;
+            var gameContent = GetNextGameContent();
+
+            if (firstScreenSaverWindow is null || gameContent is null) return;
 
             var newWindow = showFirstWindow ? firstScreenSaverWindow : secondScreenSaverWindow;
             var oldWindow = showFirstWindow ? secondScreenSaverWindow : firstScreenSaverWindow;
             showFirstWindow = !showFirstWindow;
-
-            var gameContent = GetNextGameContent();
 
             var newContent = newWindow.Content as ScreenSaverImage;
             var context = newContent.DataContext as ScreenSaverViewModel;
@@ -319,8 +326,7 @@ namespace ScreenSaver.Services.UI.Windows
             if (!GameEnumerator?.MoveNext() ?? true)
             {
                 // Reset throws NotImplementedException as of 7/5/22
-                GameEnumerator = GetGameContentEnumerator();
-                if (!GameEnumerator.MoveNext())
+                if (!InitializeEnumerator())
                 {
                     logger.Warn("No games found while rendering ScreenSaver");
                     return null;
@@ -330,12 +336,27 @@ namespace ScreenSaver.Services.UI.Windows
             return GameEnumerator.Current;
         }
 
+        private bool InitializeEnumerator()
+        {
+            GameEnumerator = GetGameContentEnumerator();
+            return GameEnumerator.MoveNext();
+        }
+
         private IEnumerator<GameContent> GetGameContentEnumerator()
-            => _playniteApi.Database.Games.
-                Select(_gameContentFactory.ConstructGameContent).
-                Where(ValidGameContent).
-                OrderBy(_ => _rng.Next()).
-                GetEnumerator();
+            => GetCurrentGames().
+               Select(_gameContentFactory.ConstructGameContent).
+               Where(ValidGameContent).
+               OrderBy(_ => _rng.Next()).
+               GetEnumerator();
+
+        private IEnumerable<Game> GetCurrentGames()
+        {
+            var currentGameGroup = _gameGroupManager.GetActiveGameGroup();
+
+            return currentGameGroup is null
+                ? _playniteApi.Database.Games
+                : _playniteApi.Database.Games.Where(g => currentGameGroup.GameGuids.Contains(g.Id));
+        }
 
         private bool ValidGameContent(GameContent gameContent)
             => (!_settings.VideoSkip      || gameContent.VideoPath      != null) &&

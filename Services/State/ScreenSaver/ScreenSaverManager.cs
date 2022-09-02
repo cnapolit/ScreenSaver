@@ -19,13 +19,13 @@ namespace ScreenSaver.Services.State.ScreenSaver
         private readonly IWindowsManager     _windowsManager;
         private          ScreenSaverSettings       _settings;
 
-        public ScreenSaverManager(IPlayniteAPI playniteApi, ScreenSaverSettings settings)
+        public ScreenSaverManager(IPlayniteAPI playniteApi, IGameGroupManager gameGroupManager, ScreenSaverSettings settings)
         {
             _playniteApi = playniteApi;
             _settings    =    settings;
 
-            _windowsManager = new WindowsManager (playniteApi, settings,  UpdatePollState);
-            _pollManager    = new PollManager    (             settings, _windowsManager);
+            _windowsManager = new WindowsManager (playniteApi, gameGroupManager, settings,  UpdatePollState);
+            _pollManager    = new PollManager    (                               settings,  _windowsManager);
         }
 
         #endregion

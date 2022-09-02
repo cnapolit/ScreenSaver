@@ -20,15 +20,15 @@ namespace ScreenSaver.Models.GameContent
 
         public GameContent ConstructGameContent(Game game)
         {
-            var id = game.Id.ToString();
+            var idString = game.Id.ToString();
             return new GameContent
             {
-                Id = id,
-                GameName = game.Name,
-                LogoPath = GetLogoPath(id),
-                MusicPath = GetMusicPath(id),
-                VideoPath = GetVideoPath(id),
-                BackgroundPath = GetBackgroundPath(game),
+                Id             =                      game.Id,
+                GameName       =                    game.Name,
+                LogoPath       = GetLogoPath       (idString),
+                MusicPath      = GetMusicPath      (idString),
+                VideoPath      = GetVideoPath      (idString),
+                BackgroundPath = GetBackgroundPath (    game)
             };
         }
 

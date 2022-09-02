@@ -10,6 +10,7 @@ using ScreenSaver.Services;
 using ScreenSaver.Models;
 using ScreenSaver.Views.Layouts;
 using ScreenSaver.Views.Models;
+using System.Linq;
 
 namespace ScreenSaver
 {
@@ -20,21 +21,26 @@ namespace ScreenSaver
         private ScreenSaverSettingsViewModel SettingsViewModel { get; set; }
 
         private readonly IMenuManager               _menuManager;
+        private readonly IGameGroupManager     _gameGroupManager;
         private readonly IScreenSaverManager _screenSaverManager;
 
         public ScreenSaverPlugin(IPlayniteAPI api) : base(api)
         {
-            Properties          = new GenericPluginProperties      {      HasSettings = true       };
-            SettingsViewModel   = new ScreenSaverSettingsViewModel (                           this);
-            _screenSaverManager = new ScreenSaverManager           (api, SettingsViewModel.Settings);
-            _menuManager        = new MenuManager                  (api,        _screenSaverManager);
+            Properties          = new GenericPluginProperties      {                 HasSettings = true                 };
+            SettingsViewModel   = new ScreenSaverSettingsViewModel (                                                this);
+            _gameGroupManager   = new GameGroupManager             (                        api.Paths.ExtensionsDataPath);
+            _screenSaverManager = new ScreenSaverManager           (api, _gameGroupManager,   SettingsViewModel.Settings);
+            _menuManager        = new MenuManager                  (api, _gameGroupManager,          _screenSaverManager);
 
+            PlayniteApi.Database.Games.ItemCollectionChanged +=
+                (_, args) => _gameGroupManager.RemoveGamesFromGroups(args.RemovedItems.Select(g => g.Id));
         }
 
         #endregion
 
         #region Playnite Interface
-        public override Guid Id { get; } = Guid.Parse("198510bc-f254-46d5-8ac7-d048e9cd1688");
+
+        public override Guid Id { get; } = Guid.Parse(Common.Constants.App.Id);
         public override ISettings                 GetSettings          (bool           firstRunSettings) => SettingsViewModel;
         public override UserControl               GetSettingsView      (bool           firstRunSettings) => new ScreenSaverSettingsView();
         public override void                      OnGameStarting       (OnGameStartingEventArgs       _) => _screenSaverManager. PausePolling     (   false);

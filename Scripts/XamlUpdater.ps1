@@ -96,7 +96,7 @@ function New-Resource {
         {
             $resourceId = $Matches[1]
             $varName = $Matches[2]
-            $lazyVarName = "_" + $varName.substring(0,1).tolower() + $varName.substring(1)
+            $lazyVarName = "_" + $varName
             $resourceLines.Add("        public static string ${varName} => ${lazyVarName}.Value;`r")
             $resourceLines.Add("        private static readonly Lazy<string> ${lazyVarName} = new Lazy<string>(() => ToId(`"${resourceId}`"));`r")
             $resourceLines.Add("`r");

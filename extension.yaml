@@ -1,7 +1,7 @@
 ﻿Id: ScreenSaver.CN
 Name: ScreenSaver
 Author: Cameron Napolitano
-Version: 1.0
+Version: 1.1
 Module: ScreenSaver.dll
 Type: GenericPlugin
 Icon: icon.png

@@ -90,10 +90,12 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Common\Constants\App.cs" />
+    <Compile Include="Common\Constants\Files.cs" />
     <Compile Include="Common\Constants\Imports.cs" />
     <Compile Include="Common\Extensions\IEnumerableExtensions.cs" />
     <Compile Include="Common\Imports\Kernel32.cs" />
     <Compile Include="Common\Imports\User32.cs" />
+    <Compile Include="ISounds.cs" />
     <Compile Include="Models\GameGroup.cs" />
     <Compile Include="Services\GameGroupManager\GameGroupManager.cs" />
     <Compile Include="Services\GameGroupManager\IGameGroupManager.cs" />

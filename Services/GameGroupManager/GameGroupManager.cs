@@ -21,7 +21,7 @@ namespace ScreenSaver.Services
 
         public GameGroupManager(string extensionsDataPath)
         {
-            _dataPath = Path.Combine(extensionsDataPath, App.Id, App.DataFileName);
+            _dataPath = Path.Combine(extensionsDataPath, App.Id, Files.Data);
             if (File.Exists(_dataPath))
             {
                 _gameGroups = JsonConvert.DeserializeObject<IList<GameGroup>>(File.ReadAllText(_dataPath));
@@ -44,6 +44,7 @@ namespace ScreenSaver.Services
         public void      CreateGameGroup             (GameGroup         gameGroup                                ) => CreateGroup             (gameGroup              );
         public void      AddGamesToGroup             (GameGroup         gameGroup, IEnumerable<Guid>    gameGuids) => AddGames                (gameGroup,    gameGuids);
         public void      RenameGameGroup             (GameGroup         gameGroup, string            newGroupName) => RenameGroup             (gameGroup, newGroupName);
+        public void      SetSortField                (GameGroup         gameGroup, string            newSortField, bool ascending) => SetSort (gameGroup, newSortField, ascending);
         public void      ToggleGameGroupActiveStatus (GameGroup         gameGroup                                ) => ToggleGroupActiveStatus (gameGroup              );
         public void      RemoveGamesFromGroups       (IEnumerable<Guid> gameGuids                                ) => RemoveFromGroups        (gameGuids              );
         public void      RemoveGamesFromGroup        (GameGroup         gameGroup, IEnumerable<Guid>    gameGuids) => RemoveFromGroup         (gameGroup,    gameGuids);
@@ -91,6 +92,17 @@ namespace ScreenSaver.Services
         {
             ValidateGroupName(newGroupName);
             gameGroup.Name = newGroupName;
+            SaveGameGroupChanges();
+        }
+
+        #endregion
+
+        #region SetSortField
+
+        private void SetSort(GameGroup gameGroup, string newSortField, bool ascending)
+        {
+            gameGroup.SortField = newSortField;
+            gameGroup.Ascending = ascending;
             SaveGameGroupChanges();
         }
 

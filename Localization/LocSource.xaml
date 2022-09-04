@@ -33,7 +33,12 @@
     <sys:String x:Key="MENU_GROUPS">Groups</sys:String>
     <sys:String x:Key="MENU_PREVIEW">Preview</sys:String>
     <sys:String x:Key="MENU_DELETE">Delete</sys:String>
+    <sys:String x:Key="MENU_PROMPT_SORT">Please select a field to sort by:</sys:String>
+    <sys:String x:Key="MENU_PROMPT_ASC">Should the group be sorted in ascending order?</sys:String>
 
+    <sys:String x:Key="MAIN_MENU_SORT">Change Sorting Field</sys:String>
+    <sys:String x:Key="MAIN_MENU_ASC">ASC</sys:String>
+    <sys:String x:Key="MAIN_MENU_DESC">DESC</sys:String>
     <sys:String x:Key="MAIN_MENU_TOGGLE">Toggle</sys:String>
     <sys:String x:Key="MAIN_MENU_RENAME">Rename</sys:String>
     <sys:String x:Key="MAIN_MENU_START">Start ScreenSaver</sys:String>
@@ -48,7 +53,9 @@
     <sys:String x:Key="GAME_MENU_ADD_SELECTED">Add Selected</sys:String>
     <sys:String x:Key="GAME_MENU_REMOVE_SELECTED">Remove Selected</sys:String>
     <sys:String x:Key="GAME_MENU_CREATE_SELECTED">Create Group From Selected</sys:String>
+    <sys:String x:Key="GAME_MENU_GAMES">Games</sys:String>
 
     <sys:String x:Key="GROUP_SAVE_FAIL">Failed to save the update to the groups due to the following error: {0}</sys:String>
+    <sys:String x:Key="GROUP_SORT_RND">Random</sys:String>
 
 </ResourceDictionary>

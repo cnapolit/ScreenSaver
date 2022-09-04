@@ -1,11 +1,14 @@
 ﻿using Playnite.SDK;
 using Playnite.SDK.Models;
+using ScreenSaver.Common.Constants;
+using ScreenSaver.Common.Extensions;
 using ScreenSaver.Models;
 using ScreenSaver.Models.Enums;
 using ScreenSaver.Models.GameContent;
 using ScreenSaver.Views.Layouts;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
@@ -21,17 +24,17 @@ namespace ScreenSaver.Services.UI.Windows
 
         #region Variables
 
-        private static readonly ILogger  logger          =                LogManager.GetLogger();
-        private static readonly Random   _rng            = new                          Random();
-        private static readonly object   screenSaverLock = new                          object();
-        private static readonly Duration duration        = new Duration(TimeSpan.FromSeconds(1));
+        private static readonly ILogger                                   logger =                LogManager.GetLogger();
+        private static readonly Random                                      _rng = new                          Random();
+        private static readonly object                           screenSaverLock = new                          object();
+        private static readonly Duration                                duration = new Duration(TimeSpan.FromSeconds(1));
 
-        private        readonly IPlayniteAPI               _playniteApi;
-        private        readonly IGameContentFactory _gameContentFactory;
-        private        readonly IGameGroupManager     _gameGroupManager;
-        private        readonly Action                  _onStopCallBack;
+        private        readonly IPlayniteAPI                        _playniteApi;
+        private        readonly IGameContentFactory          _gameContentFactory;
+        private        readonly IGameGroupManager              _gameGroupManager;
+        private        readonly Action                           _onStopCallBack;
 
-        private                 bool showFirstWindow;
+        private                 bool                             showFirstWindow;
 
         private                 ScreenSaverSettings                    _settings;
         private                 Window                    firstScreenSaverWindow;
@@ -343,19 +346,29 @@ namespace ScreenSaver.Services.UI.Windows
         }
 
         private IEnumerator<GameContent> GetGameContentEnumerator()
-            => GetCurrentGames().
-               Select(_gameContentFactory.ConstructGameContent).
-               Where(ValidGameContent).
-               OrderBy(_ => _rng.Next()).
-               GetEnumerator();
-
-        private IEnumerable<Game> GetCurrentGames()
         {
             var currentGameGroup = _gameGroupManager.GetActiveGameGroup();
 
-            return currentGameGroup is null
+            var games = currentGameGroup is null
                 ? _playniteApi.Database.Games
                 : _playniteApi.Database.Games.Where(g => currentGameGroup.GameGuids.Contains(g.Id));
+
+            return games.
+               Select(_gameContentFactory.ConstructGameContent).
+               Where(ValidGameContent).
+               OrderBy(GetSelector(currentGameGroup?.SortField), currentGameGroup?.Ascending ?? true).
+               GetEnumerator();
+        }
+
+        private Func<GameContent, object> GetSelector(string propertyName)
+        {
+            // C# 7.3 does not support conditional expressions here, only C# 9.0+ does
+            if (propertyName == Resource.GROUP_SORT_RND || propertyName is null)
+            {
+                return _ => _rng.Next();
+            }
+
+            return g => typeof(Game).GetProperty(propertyName).GetValue(g.Source);
         }
 
         private bool ValidGameContent(GameContent gameContent)
@@ -375,14 +388,14 @@ namespace ScreenSaver.Services.UI.Windows
 
         private void PlayVideo(MediaElement videoPlayer, string musicPath)
         {
-            if (!_settings.IncludeVideo)
-            {
-                videoPlayer.Stop();
-            }
-            else
+            if (_settings.IncludeVideo)
             {
                 videoPlayer.IsMuted = !ShouldPlayVideoAudio(musicPath);
                 videoPlayer.Play();
+            }
+            else
+            {
+                videoPlayer.Stop();
             }
         }
 
@@ -399,7 +412,7 @@ namespace ScreenSaver.Services.UI.Windows
 
         private DoubleAnimation CreateFade(DependencyObject window, object property, Duration duration, double from, double to)
         {
-            var fade = new DoubleAnimation()
+            var fade = new DoubleAnimation
             {
                 Duration = duration,
                 From = from,

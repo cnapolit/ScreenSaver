@@ -20,7 +20,7 @@ namespace ScreenSaver.Services.UI.Menus
         #region Variables
 
         private static readonly string PluginFolder = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-        private static readonly string IconPath = Path.Combine(PluginFolder, App.IconFileName);
+        private static readonly string IconPath     = Path.Combine(PluginFolder, Files.Icon);
 
         private readonly IPlayniteAPI _playniteAPI;
         private readonly IGameGroupManager _gameGroupManager;
@@ -118,13 +118,60 @@ namespace ScreenSaver.Services.UI.Menus
 
         private void CreateGameGroup(object _)
         {
+            var name = PromptForGroupName(string.Empty);
+            if (name is null)
+            {
+                return;
+            }
+
+            var sortField = PromptForSortingField();
+            if (sortField is null)
+            {
+                return;
+            }
+
             var group = new GameGroup
             { 
-                Name = PromptForGroupName(),
+                Name = name,
                 IsActive = GetBoolFromYesNoDialog(Resource.GAME_MENU_PROMPT_ACTIVE), 
-                GameGuids = SelectedGuids.ToHashSet()
+                GameGuids = SelectedGuids.ToHashSet(),
+                SortField = sortField,
+                Ascending = PromptForAscending(sortField)
             };
+
             _gameGroupManager.CreateGameGroup(group);
+        }
+
+        private static readonly List<GenericItemOption> SortableFields = new List<GenericItemOption>
+        {
+            new GenericItemOption(           "Added", string.Empty),
+            new GenericItemOption(      "Categories", string.Empty),
+            new GenericItemOption(  "CommunityScore", string.Empty),
+            new GenericItemOption("CompletionStatus", string.Empty),
+            new GenericItemOption(     "CriticScore", string.Empty),
+            new GenericItemOption(        "Favorite", string.Empty),
+            new GenericItemOption(          "Genres", string.Empty),
+            new GenericItemOption(     "IsInstalled", string.Empty),
+            new GenericItemOption(    "LastActivity", string.Empty),
+            new GenericItemOption(        "Modified", string.Empty),
+            new GenericItemOption(        "Playtime", string.Empty),
+            new GenericItemOption(       "Platforms", string.Empty),
+            new GenericItemOption(          "Random", string.Empty),
+            new GenericItemOption(     "ReleaseDate", string.Empty),
+            new GenericItemOption(          "Series", string.Empty),
+            new GenericItemOption(     "SortingName", string.Empty),
+            new GenericItemOption(          "Source", string.Empty),
+            new GenericItemOption(            "Tags", string.Empty),
+            new GenericItemOption(       "UserScore", string.Empty),
+            new GenericItemOption(         "Version", string.Empty)
+        };
+
+        private string PromptForSortingField()
+        {
+            var result = _playniteAPI.Dialogs.ChooseItemWithSearch(
+                SortableFields, s => SortableFields.OrderBy(f => f.Name.StartsWith(s)).ToList(), string.Empty, Resource.MENU_PROMPT_SORT);
+
+            return result?.Name;
         }
 
         #endregion
@@ -169,6 +216,15 @@ namespace ScreenSaver.Services.UI.Menus
                     Icon = IconPath
                 });
 
+                var sortPrefix = gameGroup.Ascending ? Resource.MAIN_MENU_ASC : Resource.MAIN_MENU_DESC;
+                mainMenuItems.Add(new MainMenuItem
+                {
+                    Action = _ => SetSortField(gameGroup),
+                    MenuSection = $"{groupMenuSection}|{sortPrefix}:{gameGroup.SortField}",
+                    Description = Resource.MAIN_MENU_SORT,
+                    Icon = IconPath
+                });
+
                 var games = gameGroup.GameGuids.
                     Select(id => Games.FirstOrDefault(g => g.Id == id)).
                     Where(g => g != null).
@@ -176,18 +232,18 @@ namespace ScreenSaver.Services.UI.Menus
 
                 foreach (var game in games)
                 {
-                    var menuSection = groupMenuSection + '|' + game.Name;
+                    var gameMenuSection = $"{groupMenuSection}|{Resource.GAME_MENU_GAMES}|{game.Name}";
                     mainMenuItems.Add(new MainMenuItem
                     {
                         Action = _ => _screenSaverManager.PreviewScreenSaver(game),
-                        MenuSection = menuSection,
+                        MenuSection = gameMenuSection,
                         Description = Resource.MENU_PREVIEW,
                         Icon = IconPath
                     });
                     mainMenuItems.Add(new MainMenuItem
                     {
                         Action = _ => RemoveGameFromGroup(gameGroup, game),
-                        MenuSection = menuSection,
+                        MenuSection = gameMenuSection,
                         Description = Resource.MENU_DELETE,
                         Icon = IconPath
                     });
@@ -198,7 +254,28 @@ namespace ScreenSaver.Services.UI.Menus
         }
 
         private void RenameGameGroup(GameGroup gameGroup)
-            => _gameGroupManager.RenameGameGroup(gameGroup, PromptForGroupName());
+        {
+            var name = PromptForGroupName(gameGroup.Name);
+            if (name is null)
+            {
+                return;
+            }
+
+            _gameGroupManager.RenameGameGroup(gameGroup, name);
+        }
+
+        private void SetSortField(GameGroup gameGroup)
+        {
+            var field = PromptForSortingField();
+            if (field is null)
+            {
+                return;
+            }
+
+            var ascending = PromptForAscending(field);
+
+            _gameGroupManager.SetSortField(gameGroup, field, ascending);
+        }
 
         private void RemoveGameFromGroup(GameGroup gameGroup, Game game)
         { 
@@ -227,12 +304,25 @@ namespace ScreenSaver.Services.UI.Menus
 
         #region Prompts
 
-        private string PromptForGroupName()
+        private bool PromptForAscending(string sortField) 
+            => sortField != Resource.GROUP_SORT_RND && GetBoolFromYesNoDialog(Resource.MENU_PROMPT_ASC);
+
+        private string PromptForGroupName(string suggestedName)
         {
-            var groupName = _playniteAPI.Dialogs.SelectString(Resource.MAIN_MENU_GROUP_NAME, App.Name, string.Empty).SelectedString;
+            var result = _playniteAPI.Dialogs.SelectString(Resource.MAIN_MENU_GROUP_NAME, App.Name, suggestedName);
+            if (!result.Result)
+            {
+                return null;
+            }
+
+            var groupName = result.SelectedString;
             while (string.IsNullOrWhiteSpace(groupName))
             {
-                groupName = _playniteAPI.Dialogs.SelectString(Resource.MAIN_MENU_GROUP_NAME_SHAME, App.Name, string.Empty).SelectedString;
+                groupName = _playniteAPI.Dialogs.SelectString(Resource.MAIN_MENU_GROUP_NAME_SHAME, App.Name, suggestedName).SelectedString;
+                if (!result.Result)
+                {
+                    return null;
+                }
             }
             return groupName;
         }

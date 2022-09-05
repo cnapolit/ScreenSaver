@@ -12,6 +12,7 @@ using ScreenSaver.Common.Imports;
 using static ScreenSaver.Common.Imports.User32;
 using Keys = System.Windows.Forms.Keys;
 using ScreenSaver.Models;
+using Sounds;
 
 namespace ScreenSaver.Services.State.Poll
 {
@@ -45,6 +46,7 @@ namespace ScreenSaver.Services.State.Poll
         private                 uint                          _ScreenSaverIntervalInMs;
 
         private                 ScreenSaverSettings                          _settings;
+        private                 ISounds                                        _sounds;
 
         #endregion
 
@@ -62,8 +64,8 @@ namespace ScreenSaver.Services.State.Poll
 
         #region Interface
 
-        public void SetupPolling      (                            ) =>  Setup  (           );
-        public void StartPolling      (            bool immediately) =>  Start  (immediately);
+        public void SetupPolling      (ISounds               sounds) =>  Setup  (     sounds);
+        public void StartPolling      (bool             immediately) =>  Start  (immediately);
         public void PausePolling      (                            ) =>  Pause  (           );
         public void StopPolling       (                            ) =>   Stop  (           );
         public void UpdateSettings    (ScreenSaverSettings settings) =>  Update (   settings);
@@ -74,8 +76,9 @@ namespace ScreenSaver.Services.State.Poll
 
         #region SetupPolling
 
-        private void Setup()
+        private void Setup(ISounds sounds)
         {
+            _sounds = sounds;
             _hookID = SetHook(_proc);
         }
 
@@ -179,7 +182,11 @@ namespace ScreenSaver.Services.State.Poll
 
             if (screenSaverIsNotRunning && TimeToStart)
             {
-                // WPF Requires The Parent Thread When Interacting UI
+                if (_sounds != null)
+                {
+                    Application.Current.Dispatcher.Invoke(_sounds.Pause);
+                }
+
                 Application.Current.Dispatcher.Invoke(_screenSaverManager.StartScreenSaver);
                 _timeSinceStart = Environment.TickCount + 100;
                 _lastScreenChangeTimeStampInMs = Environment.TickCount;
@@ -189,6 +196,10 @@ namespace ScreenSaver.Services.State.Poll
             {
                 _timeSinceStart = null;
                 Application.Current.Dispatcher.Invoke(_screenSaverManager.StopScreenSaver);
+                if (_sounds != null)
+                {
+                    Application.Current.Dispatcher.Invoke(_sounds.Play);
+                }
             }
             else if (!screenSaverIsNotRunning && TimeToUpdate)
             {

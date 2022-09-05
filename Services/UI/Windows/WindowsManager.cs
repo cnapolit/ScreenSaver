@@ -169,7 +169,7 @@ namespace ScreenSaver.Services.UI.Windows
 
         private void MuteBackgroundMusic()
         {
-            if (_playniteApi.ApplicationInfo.Mode == ApplicationMode.Fullscreen)
+            if (_playniteApi.ApplicationInfo.Mode is ApplicationMode.Fullscreen)
             {
                 _playniteApi.ApplicationSettings.Fullscreen.IsMusicMuted = true;
             }
@@ -177,7 +177,7 @@ namespace ScreenSaver.Services.UI.Windows
 
         private void UnMuteBackgroundMusic()
         {
-            if (_playniteApi.ApplicationInfo.Mode == ApplicationMode.Fullscreen)
+            if (_playniteApi.ApplicationInfo.Mode is ApplicationMode.Fullscreen)
             {
                 _playniteApi.ApplicationSettings.Fullscreen.IsMusicMuted = false;
             }

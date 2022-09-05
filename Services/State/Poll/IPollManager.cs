@@ -1,8 +1,10 @@
-﻿namespace ScreenSaver.Services.State.Poll
+﻿using Sounds;
+
+namespace ScreenSaver.Services.State.Poll
 {
     internal interface IPollManager : IScreenSaverSettings
     {
-        void SetupPolling();
+        void SetupPolling(ISounds sounds);
         void StartPolling(bool immediately);
         void PausePolling();
         void StopPolling();

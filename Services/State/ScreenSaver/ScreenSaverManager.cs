@@ -1,11 +1,14 @@
 ﻿using Microsoft.Win32;
 using Playnite.SDK;
 using Playnite.SDK.Models;
+using Sounds;
+using ScreenSaver.Common.Constants;
 using ScreenSaver.Models;
 using ScreenSaver.Models.Enums;
 using ScreenSaver.Services.State.Poll;
 using ScreenSaver.Services.UI.Windows;
 using System;
+using System.Linq;
 using System.Windows;
 
 namespace ScreenSaver.Services.State.ScreenSaver
@@ -17,6 +20,7 @@ namespace ScreenSaver.Services.State.ScreenSaver
         private readonly IPlayniteAPI           _playniteApi;
         private readonly IPollManager           _pollManager;
         private readonly IWindowsManager     _windowsManager;
+        private          ISounds                     _sounds;
         private          ScreenSaverSettings       _settings;
 
         public ScreenSaverManager(IPlayniteAPI playniteApi, IGameGroupManager gameGroupManager, ScreenSaverSettings settings)
@@ -52,7 +56,9 @@ namespace ScreenSaver.Services.State.ScreenSaver
             Application  .Current.Activated               += OnApplicationActivate;
             Application  .Current.MainWindow.StateChanged += OnWindowStateChanged;
 
-            _pollManager.SetupPolling();
+            _sounds = _playniteApi.Addons.Plugins.FirstOrDefault(p => p.Id.ToString() is App.Sounds) as ISounds;
+
+            _pollManager.SetupPolling(_sounds);
 
             if (ShouldPoll())
             {
@@ -110,7 +116,9 @@ namespace ScreenSaver.Services.State.ScreenSaver
         public void Preview(Game game)
         {
             Pause(true);
+            _sounds.Pause();
             _windowsManager.PreviewScreenSaver(game, () => Start(false));
+            _sounds.Play();
         }
 
         #endregion

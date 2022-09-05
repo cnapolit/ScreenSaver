@@ -13,6 +13,6 @@ namespace ScreenSaver.Common.Constants
         public const string Data         =                                     "GameGroupData.json";
         public const string Icon         =                                               "icon.png";
         public const string MetaDataPath =                                   "ExtraMetadata\\games";
-        public const string SoundsPath   = @"9c960604-b8bc-4407-a4e4-e291c6097c7d\Music Files\Game";
+        public const string SoundsPath   =                        App.Sounds + @"\Music Files\Game";
     }
 }

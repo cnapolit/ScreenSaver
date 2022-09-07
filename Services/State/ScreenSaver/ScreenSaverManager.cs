@@ -22,6 +22,7 @@ namespace ScreenSaver.Services.State.ScreenSaver
         private readonly IWindowsManager     _windowsManager;
         private          ISounds                     _sounds;
         private          ScreenSaverSettings       _settings;
+        private          int                _activeGameCount;
 
         public ScreenSaverManager(IPlayniteAPI playniteApi, IGameGroupManager gameGroupManager, ScreenSaverSettings settings)
         {
@@ -36,12 +37,12 @@ namespace ScreenSaver.Services.State.ScreenSaver
 
         #region Interface
 
-        public void SetupPolling       (                            ) => Setup   (           );
-        public void StopPolling        (                            ) => Stop    (           );
-        public void StartPolling       (bool                  manual) => Start   (     manual);
-        public void PausePolling       (bool             ignoreCheck) => Pause   (ignoreCheck);
-        public void UpdateSettings     (ScreenSaverSettings settings) => Update  (   settings);
-        public void PreviewScreenSaver (Game                    game) => Preview (       game);
+        public void SetupPolling       (                                              ) => Setup   (                        );
+        public void StopPolling        (                                              ) => Stop    (                        );
+        public void StartPolling       (bool                  manual, bool gameStopped) => Start   (     manual, gameStopped);
+        public void PausePolling       (bool             ignoreCheck, bool gameStarted) => Pause   (ignoreCheck, gameStarted);
+        public void UpdateSettings     (ScreenSaverSettings settings                  ) => Update  (   settings             );
+        public void PreviewScreenSaver (Game                    game                  ) => Preview (       game             );
 
         #endregion
 
@@ -70,8 +71,13 @@ namespace ScreenSaver.Services.State.ScreenSaver
 
         #region StartPolling
 
-        private void Start(bool manual)
+        private void Start(bool manual, bool gameStopped)
         {
+            if (gameStopped)
+            {
+                _activeGameCount--;
+            }
+
             if (manual || ShouldPoll())
             {
                 _pollManager.StartPolling(manual);
@@ -82,9 +88,14 @@ namespace ScreenSaver.Services.State.ScreenSaver
 
         #region PausePolling
 
-        private void Pause(bool ignoreCheck)
+        private void Pause(bool ignoreCheck, bool gameStarted)
         {
-            if (ignoreCheck || _settings.DisableWhilePlaying)
+            if (gameStarted)
+            {
+                _activeGameCount++;
+            }
+
+            if (ignoreCheck || (_settings.DisableWhilePlaying && gameStarted))
             {
                 _pollManager    .PausePolling    ();
                 _windowsManager .StopScreenSaver ();
@@ -115,9 +126,9 @@ namespace ScreenSaver.Services.State.ScreenSaver
 
         public void Preview(Game game)
         {
-            Pause(true);
+            Pause(true, false);
             _sounds.Pause();
-            _windowsManager.PreviewScreenSaver(game, () => Start(false));
+            _windowsManager.PreviewScreenSaver(game, () => Start(false, false));
             _sounds.Play();
         }
 
@@ -153,8 +164,9 @@ namespace ScreenSaver.Services.State.ScreenSaver
             var playOnBoth       = _settings.PlayState is PlayState.Always;
             var playOnFullScreen = _settings.PlayState is PlayState.FullScreen && !desktopMode;
             var playOnDesktop    = _settings.PlayState is PlayState.Desktop    &&  desktopMode;
+            var stopDuringGame   = _settings.DisableWhilePlaying  && _activeGameCount > 0;
 
-            return playOnBoth || playOnFullScreen || playOnDesktop;
+            return (playOnBoth || playOnFullScreen || playOnDesktop) && !stopDuringGame;
         }
 
         #region State Changes
@@ -164,8 +176,8 @@ namespace ScreenSaver.Services.State.ScreenSaver
             if (_settings.PauseOnDeactivate) switch (Application.Current?.MainWindow?.WindowState)
             {
                 case WindowState.Normal   :
-                case WindowState.Maximized: Start(false); break;
-                case WindowState.Minimized: Pause( true); break;
+                case WindowState.Maximized: Start(false, false); break;
+                case WindowState.Minimized: Pause( true, false); break;
             }
         }
 
@@ -176,15 +188,15 @@ namespace ScreenSaver.Services.State.ScreenSaver
 
         private void OnApplicationActivate(object sender, EventArgs e)
         {
-            if (_settings.PauseOnDeactivate) Start(false);
+            if (_settings.PauseOnDeactivate) Start(false, false);
         }
 
         private void OnPowerModeChanged(object sender, PowerModeChangedEventArgs args)
         {
             switch (args.Mode)
             {
-                case PowerModes.Resume : Start(false); break;
-                case PowerModes.Suspend: Pause( true); break;
+                case PowerModes.Resume : Start(false, false); break;
+                case PowerModes.Suspend: Pause( true, false); break;
             }
         }
 

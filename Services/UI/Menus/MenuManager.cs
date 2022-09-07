@@ -296,7 +296,7 @@ namespace ScreenSaver.Services.UI.Menus
             }
         }
 
-        private void ManuallyStartScreenSaver(object _) => _screenSaverManager.StartPolling(true);
+        private void ManuallyStartScreenSaver(object _) => _screenSaverManager.StartPolling(true, false);
 
         #endregion
 

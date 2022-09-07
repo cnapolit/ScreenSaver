@@ -43,13 +43,13 @@ namespace ScreenSaver
         public override Guid Id { get; } = Guid.Parse(Common.Constants.App.Id);
         public override ISettings                 GetSettings          (bool           firstRunSettings) => SettingsViewModel;
         public override UserControl               GetSettingsView      (bool           firstRunSettings) => new ScreenSaverSettingsView();
-        public override void                      OnGameStarting       (OnGameStartingEventArgs       _) => _screenSaverManager. PausePolling     (   false);
-        public override void                      OnGameStopped        (OnGameStoppedEventArgs        _) => _screenSaverManager. StartPolling     (   false);
-        public override void                      OnApplicationStarted (OnApplicationStartedEventArgs _) => _screenSaverManager. SetupPolling     (        );
-        public override void                      OnApplicationStopped (OnApplicationStoppedEventArgs _) => _screenSaverManager. StopPolling      (        );
-        public override IEnumerable<GameMenuItem> GetGameMenuItems     (GetGameMenuItemsArgs          _) => _menuManager.        GetGameMenuItems (        );
-        public override IEnumerable<MainMenuItem> GetMainMenuItems     (GetMainMenuItemsArgs          _) => _menuManager.        GetMainMenuItems (        );
-        public          void                      UpdateSettings       (ScreenSaverSettings    settings) => _screenSaverManager. UpdateSettings   (settings);
+        public override void                      OnGameStarting       (OnGameStartingEventArgs       _) => _screenSaverManager. PausePolling     (false, true);
+        public override void                      OnGameStopped        (OnGameStoppedEventArgs        _) => _screenSaverManager. StartPolling     (false, true);
+        public override void                      OnApplicationStarted (OnApplicationStartedEventArgs _) => _screenSaverManager. SetupPolling     (           );
+        public override void                      OnApplicationStopped (OnApplicationStoppedEventArgs _) => _screenSaverManager. StopPolling      (           );
+        public override IEnumerable<GameMenuItem> GetGameMenuItems     (GetGameMenuItemsArgs          _) => _menuManager.        GetGameMenuItems (           );
+        public override IEnumerable<MainMenuItem> GetMainMenuItems     (GetMainMenuItemsArgs          _) => _menuManager.        GetMainMenuItems (           );
+        public          void                      UpdateSettings       (ScreenSaverSettings    settings) => _screenSaverManager. UpdateSettings   (   settings);
 
         #endregion
     }

@@ -40,6 +40,8 @@
                     <RowDefinition/>
                     <RowDefinition Height="5"/>
                     <RowDefinition/>
+                    <RowDefinition Height="5"/>
+                    <RowDefinition/>
                 </Grid.RowDefinitions>
                 <StackPanel Grid.Row="0" Orientation="Horizontal">
                     <Label Name="LblMusicVolume" Content="{DynamicResource SETTINGS_AUDIO_VOLUME}" d:LayoutOverrides="VerticalAlignment"/>
@@ -71,7 +73,8 @@
                 <CheckBox  Grid.Row="16" Grid.ColumnSpan="2"   Name="CheckLogoSkip"       IsChecked="{Binding Settings.LogoSkip}"            Content="{DynamicResource SETTINGS_LOGO_SKIP}"/>
                 <CheckBox  Grid.Row="18" Grid.ColumnSpan="2"   Name="CheckPlayBackup"     IsChecked="{Binding Settings.PlayBackup}"          Content="{DynamicResource SETTINGS_PLAY_BACKUP}"/>
                 <CheckBox  Grid.Row="20" Grid.ColumnSpan="2"   Name="CheckDisablePlay"    IsChecked="{Binding Settings.DisableWhilePlaying}" Content="{DynamicResource SETTINGS_DISABLE_WHILE_PLAY}"/>
-                <CheckBox  Grid.Row="22" Grid.ColumnSpan="2"   Name="CheckPauseOndDeac"   IsChecked="{Binding Settings.PauseOnDeactivate}"   Content="{DynamicResource SETTINGS_PAUSE_ON_DEAC}"/>
+                <CheckBox  Grid.Row="22" Grid.ColumnSpan="2"   Name="CheckPauseOnDeac"    IsChecked="{Binding Settings.PauseOnDeactivate}"   Content="{DynamicResource SETTINGS_PAUSE_ON_DEAC}"/>
+                <CheckBox  Grid.Row="24" Grid.ColumnSpan="2"   Name="CheckDisplayClock"   IsChecked="{Binding Settings.DisplayClock}"        Content="{DynamicResource SETTINGS_DISPLAY_CLOCK}"/>
             </Grid>
         </GroupBox>
     </StackPanel>

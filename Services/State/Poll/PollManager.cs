@@ -9,10 +9,10 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using ScreenSaver.Common.Imports;
-using static ScreenSaver.Common.Imports.User32;
-using Keys = System.Windows.Forms.Keys;
 using ScreenSaver.Models;
 using Sounds;
+using static ScreenSaver.Common.Imports.User32;
+using Keys = System.Windows.Forms.Keys;
 
 namespace ScreenSaver.Services.State.Poll
 {
@@ -117,7 +117,7 @@ namespace ScreenSaver.Services.State.Poll
                 case TaskStatus.WaitingForActivation:
                     if (startImmediately)
                     {
-                        _timeSinceStart            = Environment.TickCount + 100;
+                        _timeSinceStart = Environment.TickCount + 100;
                         _lastScreenChangeTimeStampInMs = Environment.TickCount;
                         _screenSaverManager.StartScreenSaver();
                     }
@@ -128,7 +128,7 @@ namespace ScreenSaver.Services.State.Poll
             }
         }
 
-        // I would rather rely on a timer, but that isn't ideal until a event handler for controllers is discovered.
+        // I would rather rely on a timer, but that isn't ideal until a event handler for controllers available.
         // Otherwise, we would still need to poll for gamepad input to close the screen saver
         // and I'm not polling and managing a timer together.
         private void PollForInput(bool startImmediately) 
@@ -150,10 +150,11 @@ namespace ScreenSaver.Services.State.Poll
             var packetNumbers = new int?[4];
             _lastScreenChangeTimeStampInMs = 0;
             _lastInputTimeStampInMs = startImediately ? 0 : Environment.TickCount;
+            DateTime time = default;
 
             while (_isPolling)
             {
-                UpdateScreenSaverState();
+                UpdateScreenSaverState(ref time);
                 Task.Delay(16);
 
                 if (AKeyStateChanged())
@@ -176,7 +177,7 @@ namespace ScreenSaver.Services.State.Poll
             }
         }
 
-        private void UpdateScreenSaverState()
+        private void UpdateScreenSaverState(ref DateTime time)
         {
             var screenSaverIsNotRunning = _timeSinceStart is null;
 
@@ -190,6 +191,7 @@ namespace ScreenSaver.Services.State.Poll
                 Application.Current.Dispatcher.Invoke(_screenSaverManager.StartScreenSaver);
                 _timeSinceStart = Environment.TickCount + 100;
                 _lastScreenChangeTimeStampInMs = Environment.TickCount;
+                time = DateTime.Now;
                 
             }
             else if (_lastInputTimeStampInMs > _timeSinceStart)
@@ -205,6 +207,14 @@ namespace ScreenSaver.Services.State.Poll
             {
                 _lastScreenChangeTimeStampInMs = Environment.TickCount;
                 Application.Current.Dispatcher.Invoke(_screenSaverManager.UpdateScreenSaver);
+                time = DateTime.Now;
+            }
+
+            var currentTime = DateTime.Now;
+            if (currentTime.Second is 0 && currentTime - time > TimeSpan.FromMinutes(1))
+            {
+                time = DateTime.Now;
+                Application.Current.Dispatcher.Invoke(_screenSaverManager.UpdateScreenSaverTime);
             }
         }
 

@@ -8,7 +8,6 @@ using ScreenSaver.Models.GameContent;
 using ScreenSaver.Views.Layouts;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
@@ -58,11 +57,12 @@ namespace ScreenSaver.Services.UI.Windows
 
         #region Interface
 
-        public void StartScreenSaver   (                                            ) => Start   (                   );
-        public void StopScreenSaver    (                                            ) => Stop    (                   );
-        public void UpdateScreenSaver  (                                            ) => Update  (                   );
-        public void PreviewScreenSaver (Game game, Action              closeCallBack) => Preview (game, closeCallBack);
-        public void UpdateSettings     (           ScreenSaverSettings      settings) =>          _settings = settings;
+        public void StartScreenSaver      (                                            ) => Start      (                   );
+        public void StopScreenSaver       (                                            ) => Stop       (                   );
+        public void UpdateScreenSaver     (                                            ) => Update     (                   );
+        public void UpdateScreenSaverTime (                                            ) => UpdateTime (                   );
+        public void PreviewScreenSaver    (Game game, Action              closeCallBack) => Preview    (game, closeCallBack);
+        public void UpdateSettings        (           ScreenSaverSettings      settings) =>             _settings = settings;
 
         #endregion
 
@@ -94,7 +94,7 @@ namespace ScreenSaver.Services.UI.Windows
                 Focusable = false,
                 AllowsTransparency = true,
                 Opacity = 0,
-                //Topmost = true
+                Topmost = true
             };
             blackgroundWindow.Show();
 
@@ -122,6 +122,9 @@ namespace ScreenSaver.Services.UI.Windows
 
             storyBoard.Begin();
             PlayMedia(firstScreenSaverWindow.Content, gameContent);
+
+            // Startup can take some time, update clock just in case
+            UpdateTime();
         }
 
         #endregion
@@ -258,10 +261,12 @@ namespace ScreenSaver.Services.UI.Windows
                 }
             };
 
+            UpdateTime();
             storyBoard.Begin();
 
             PlayVideo(newContent.VideoPlayer, gameContent.MusicPath);
             PlayAudio(newContent.MusicPlayer, gameContent.VideoPath);
+            UpdateTime();
         }
 
         #endregion
@@ -275,6 +280,29 @@ namespace ScreenSaver.Services.UI.Windows
             firstScreenSaverWindow.Closed += (_, __) => onCloseCallBack();
             firstScreenSaverWindow.Opacity = 1;
             PlayMedia(firstScreenSaverWindow.Content, gameContent);
+        }
+
+        #endregion
+
+        #region UpdateScreenSaverTime
+
+        private void UpdateTime()
+        {
+            if (!_settings.DisplayClock) return;
+
+            var firstScreen = firstScreenSaverWindow?.Content as ScreenSaverImage;
+            var secondScreen = secondScreenSaverWindow?.Content as ScreenSaverImage;
+
+            if (firstScreen?.DataContext is ScreenSaverViewModel firstView && secondScreen?.DataContext is ScreenSaverViewModel secondView)
+            {
+                var time = DateTime.Now;
+                var clockText = CreateClockText(time);
+                var dateText = CreateDateText(time);
+                firstView.ClockText = clockText;
+                firstView.DateText = dateText;
+                secondView.ClockText = clockText;
+                secondView.DateText = dateText;
+            }
         }
 
         #endregion
@@ -297,6 +325,7 @@ namespace ScreenSaver.Services.UI.Windows
                 Background = Brushes.Transparent
             };
 
+            var time = DateTime.Now;
             var content = new ScreenSaverImage
             {
                 ParentWindow = window,
@@ -306,7 +335,9 @@ namespace ScreenSaver.Services.UI.Windows
                     BackgroundPath = gameContent?.BackgroundPath,
                     LogoPath = gameContent?.LogoPath,
                     VideoPath = gameContent?.VideoPath,
-                    MusicPath = gameContent?.MusicPath
+                    MusicPath = gameContent?.MusicPath,
+                    ClockText = CreateClockText(time),
+                    DateText = CreateDateText(time)
                 }
             };
 
@@ -314,6 +345,7 @@ namespace ScreenSaver.Services.UI.Windows
             content.VideoPlayer.Volume = volume;
             content.MusicPlayer.Volume = volume;
             content.LogoImage.Visibility = _settings.IncludeLogo ? Visibility.Visible : Visibility.Hidden;
+            content.Clock.Visibility = _settings.DisplayClock ? Visibility.Visible : Visibility.Hidden;
 
             window.Content = content;
             window.Closed += ScreenSaverClosed;
@@ -323,6 +355,9 @@ namespace ScreenSaver.Services.UI.Windows
 
             return window;
         }
+
+        string CreateClockText(DateTime time) => time.ToString("t");
+        string CreateDateText(DateTime time) => time.ToString("dddd, MMMM dd");
 
         private GameContent GetNextGameContent()
         {

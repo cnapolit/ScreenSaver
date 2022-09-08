@@ -20,5 +20,6 @@ namespace ScreenSaver.Models
         public bool IncludeLogo { get; set; } = true;
         public bool DisableWhilePlaying { get; set; } = true;
         public bool PauseOnDeactivate { get; set; } = true;
+        public bool DisplayClock { get; set; } = true;
     }
 }

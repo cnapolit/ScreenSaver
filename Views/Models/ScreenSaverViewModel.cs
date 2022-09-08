@@ -54,6 +54,28 @@ namespace ScreenSaver
             }
         }
 
+        private string clockText = null;
+        public string ClockText
+        {
+            get => clockText;
+            set
+            {
+                clockText = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private string dateText = null;
+        public string DateText
+        {
+            get => dateText;
+            set
+            {
+                dateText = value;
+                OnPropertyChanged();
+            }
+        }
+
         private ScreenSaverSettings settings;
         public ScreenSaverSettings Settings
         {

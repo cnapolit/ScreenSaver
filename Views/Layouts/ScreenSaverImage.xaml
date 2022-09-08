@@ -13,8 +13,7 @@
     <Grid Background="Transparent" Cursor="None">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="4*" />
-            <ColumnDefinition Width="3*" />
-            <ColumnDefinition Width="3*" />
+            <ColumnDefinition Width="6*" />
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition Height="3*" />
@@ -35,6 +34,24 @@
                 </Image.Effect>
             </Image>
         </Grid>
+        <UserControl Name="Clock" Grid.Row="0" Grid.Column="1" Width="auto" Height="auto" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="0 20 20 0" >
+            <Border Width="auto" Height="auto" BorderThickness="1" CornerRadius="8">
+                <Border.BorderBrush>
+                    <SolidColorBrush Color="#FF2E2E2E" Opacity=".5"/>
+                </Border.BorderBrush>
+                <Border.Background>
+                    <SolidColorBrush Color="#FF2E2E2E" Opacity=".5"/>
+                </Border.Background>
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <TextBlock Name="ClockTextBlock" Grid.Row="0" Background="Transparent" TextAlignment="Right" FontFamily="Segoe UI Light" FontSize="40" Foreground="White" Margin="15 15 15 0" Text="{Binding ClockText}" />
+                    <TextBlock Name="DateTextBlock" Grid.Row="1" Background="Transparent" TextAlignment="Right" FontFamily="Segoe UI Light" FontSize="30" Foreground="White" Margin="15 0 15 15" Text="{Binding DateText}" />
+                </Grid>
+            </Border>
+        </UserControl>
         <MediaElement Name="VideoPlayer" Grid.Column="0" Grid.Row="1" Stretch="Uniform" Margin="20 0 0 20" VerticalAlignment="Bottom" HorizontalAlignment="Left" Source="{Binding VideoPath}" IsMuted="True" LoadedBehavior="Manual" UnloadedBehavior="Manual"/>
         <MediaElement Name="MusicPlayer" Source="{Binding MusicPath}" LoadedBehavior="Manual" UnloadedBehavior="Manual"/>
     </Grid>

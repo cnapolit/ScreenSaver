@@ -27,10 +27,35 @@
     <sys:String x:Key="SETTINGS_PLAY_BACKUP">Play backup audio if selected is missing</sys:String>
     <sys:String x:Key="SETTINGS_DISABLE_WHILE_PLAY">Disable ScreenSaver while Playing</sys:String>
     <sys:String x:Key="SETTINGS_PAUSE_ON_DEAC">Disable ScreenSaver When Not In Use</sys:String>
+    <sys:String x:Key="SETTINGS_DISPLAY_CLOCK">Display Clock</sys:String>
 
     <!-- Settings Resources -->
 
+    <sys:String x:Key="MENU_GROUPS">Groups</sys:String>
+    <sys:String x:Key="MENU_PREVIEW">Preview</sys:String>
+    <sys:String x:Key="MENU_DELETE">Delete</sys:String>
+    <sys:String x:Key="MENU_PROMPT_SORT">Please select a field to sort by:</sys:String>
+    <sys:String x:Key="MENU_PROMPT_ASC">Should the group be sorted in ascending order?</sys:String>
     <sys:String x:Key="MAIN_MENU_START">Start ScreenSaver</sys:String>
+    <sys:String x:Key="MAIN_MENU_SORT">Change Sorting Field</sys:String>
+    <sys:String x:Key="MAIN_MENU_ASC">ASC</sys:String>
+    <sys:String x:Key="MAIN_MENU_DESC">DESC</sys:String>
+    <sys:String x:Key="MAIN_MENU_TOGGLE">Toggle</sys:String>
+    <sys:String x:Key="MAIN_MENU_RENAME">Rename</sys:String>
     <sys:String x:Key="GAME_MENU_PREVIEW">Preview ScreenSaver</sys:String>
+    <sys:String x:Key="MAIN_MENU_GROUP_NAME">Please enter a name for this group:</sys:String>
+    <sys:String x:Key="MAIN_MENU_GROUP_NAME_SHAME">Please enter a non-empty name for this group:</sys:String>
+    <sys:String x:Key="MAIN_MENU_GROUP_NAME_CONFLICT">A group of the same name already exists.</sys:String>
+    <sys:String x:Key="MAIN_MENU_PROMPT_DELETE">Are you sure you want to delete group '{0}'? This action cannot be undone.</sys:String>
+    <sys:String x:Key="MAIN_MENU_GROUP_REMOVE_EMPTY">This group will have no games after this removal. Would you like to delete the group?\nOtherwise, the group will be labelled as inactive.</sys:String>
 
+</ResourceDictionary>
+    <sys:String x:Key="GAME_MENU_PROMPT_ACTIVE">Should this be the new active group?</sys:String>
+    <sys:String x:Key="GAME_MENU_ADD_SELECTED">Add Selected</sys:String>
+    <sys:String x:Key="GAME_MENU_REMOVE_SELECTED">Remove Selected</sys:String>
+    <sys:String x:Key="GAME_MENU_CREATE_SELECTED">Create Group From Selected</sys:String>
+    <sys:String x:Key="GAME_MENU_GAMES">Games</sys:String>
+</ResourceDictionary>
+    <sys:String x:Key="GROUP_SAVE_FAIL">Failed to save the update to the groups due to the following error: {0}</sys:String>
+    <sys:String x:Key="GROUP_SORT_RND">Random</sys:String>
 </ResourceDictionary>

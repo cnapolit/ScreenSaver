@@ -8,6 +8,7 @@ namespace ScreenSaver.Services.UI.Windows
         void StartScreenSaver();
         void StopScreenSaver();
         void UpdateScreenSaver();
+        void UpdateScreenSaverTime();
         void PreviewScreenSaver(Game game, Action onCloseCallBack);
     }
 }

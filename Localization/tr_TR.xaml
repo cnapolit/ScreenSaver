@@ -2,6 +2,7 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:sys="clr-namespace:System;assembly=mscorlib">
 
     <!-- Settings Resources -->
+    <sys:String x:Key="SETTINGS_HEADER">Settings</sys:String>
 
     <sys:String x:Key="SETTINGS_AUDIO_VOLUME">Audio Volume</sys:String>
 

@@ -10,7 +10,7 @@
              d:DataContext="{d:DesignInstance Type=s:ScreenSaverSettingsViewModel}"
              d:DesignHeight="460">
     <StackPanel Margin="2">
-        <GroupBox Name="Settings" Header="Settings" Margin="0,5,0,0">
+        <GroupBox Name="Settings" Header="{DynamicResource SETTINGS_HEADER}" Margin="0,5,0,0">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>

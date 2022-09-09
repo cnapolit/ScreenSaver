@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:sys="clr-namespace:System;assembly=mscorlib">
 
-<!-- Settings Resources -->
+    <!-- Settings Resources -->
 
     <sys:String x:Key="SETTINGS_AUDIO_VOLUME">Audio Volume</sys:String>
 
@@ -18,6 +18,11 @@
 
     <sys:String x:Key="SETTINGS_GAME_TRANS">Time Between Game Transitions in Seconds:</sys:String>
     <sys:String x:Key="SETTINGS_SVR_INTERVAL">Time for ScreenSaver to Appear in Seconds:</sys:String>
+    <sys:String x:Key="SETTINGS_VIDEO_CORNER">Video Corner Radius:</sys:String>
+    <sys:String x:Key="SETTINGS_CLOCK_CORNER">Clock Corner Radius:</sys:String>
+    <sys:String x:Key="SETTINGS_CLOCK_FONT">Clock Font</sys:String>
+    <sys:String x:Key="SETTINGS_CLOCK_FONT_SIZE">Clock Font Size</sys:String>
+    <sys:String x:Key="SETTINGS_CLOCK_SUB_FONT_SIZE">Clock Sub-Font Size</sys:String>
 
     <sys:String x:Key="SETTINGS_BCKGRD_SKIP">Skip Games Missing a Background</sys:String>
     <sys:String x:Key="SETTINGS_VIDEO_SKIP">Skip Games Missing Video</sys:String>

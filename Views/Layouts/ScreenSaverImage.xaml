@@ -28,14 +28,14 @@
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
             <Image Name="LogoImage" Stretch="Uniform" HorizontalAlignment="Left" VerticalAlignment="Bottom"
-               Grid.ColumnSpan="1" Grid.Column="0" Source="{Binding LogoPath}" Margin="25 0 0 10">
+               Grid.ColumnSpan="1" Grid.Row="0" Grid.Column="0" Source="{Binding LogoPath}" Margin="25 0 0 10">
                 <Image.Effect>
                     <DropShadowEffect Direction="0" Color="#FF000000" ShadowDepth="0" BlurRadius="40" />
                 </Image.Effect>
             </Image>
         </Grid>
         <UserControl Name="Clock" Grid.Row="0" Grid.Column="1" Width="auto" Height="auto" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="0 20 20 0" >
-            <Border Width="auto" Height="auto" BorderThickness="1" CornerRadius="8">
+            <Border Width="auto" Height="auto" BorderThickness="1" CornerRadius="{Binding Settings.ClockCornerRadius}">
                 <Border.BorderBrush>
                     <SolidColorBrush Color="#FF2E2E2E" Opacity=".5"/>
                 </Border.BorderBrush>
@@ -47,12 +47,22 @@
                         <RowDefinition Height="*" />
                         <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
-                    <TextBlock Name="ClockTextBlock" Grid.Row="0" Background="Transparent" TextAlignment="Right" FontFamily="Segoe UI Light" FontSize="40" Foreground="White" Margin="15 15 15 0" Text="{Binding ClockText}" />
-                    <TextBlock Name="DateTextBlock" Grid.Row="1" Background="Transparent" TextAlignment="Right" FontFamily="Segoe UI Light" FontSize="30" Foreground="White" Margin="15 0 15 15" Text="{Binding DateText}" />
+                    <TextBlock Name="ClockTextBlock" Grid.Row="0" Background="Transparent" TextAlignment="Right" FontFamily="{Binding Settings.ClockFont}" FontSize="{Binding Settings.ClockFontSize}" Foreground="White" Margin="15 15 15 0" Text="{Binding ClockText}" />
+                    <TextBlock Name="DateTextBlock" Grid.Row="1" Background="Transparent" TextAlignment="Right" FontFamily="{Binding Settings.ClockFont}" FontSize="{Binding Settings.ClockSubFontSize}" Foreground="White" Margin="15 0 15 15" Text="{Binding DateText}" />
                 </Grid>
             </Border>
         </UserControl>
-        <MediaElement Name="VideoPlayer" Grid.Column="0" Grid.Row="1" Stretch="Uniform" Margin="20 0 0 20" VerticalAlignment="Bottom" HorizontalAlignment="Left" Source="{Binding VideoPath}" IsMuted="True" LoadedBehavior="Manual" UnloadedBehavior="Manual"/>
+        <Border Name="Video" BorderBrush="Transparent" CornerRadius="{Binding Settings.VideoCornerRadius}" Grid.Row="1" Grid.Column="0" Width="auto" Height="auto" VerticalAlignment="Bottom" HorizontalAlignment="Left"  Margin="20 0 0 20">
+            <Grid>
+                <Border Name="mask" Background="Black" CornerRadius="{Binding ElementName=Video, Path=CornerRadius}"/>
+                <Grid>
+                    <Grid.OpacityMask>
+                        <VisualBrush Visual="{Binding ElementName=mask}"/>
+                    </Grid.OpacityMask>
+                    <MediaElement Name="VideoPlayer" Stretch="Uniform"  Source="{Binding VideoPath}" IsMuted="True" LoadedBehavior="Play" UnloadedBehavior="Manual"/>
+                </Grid>
+            </Grid>
+        </Border>
         <MediaElement Name="MusicPlayer" Source="{Binding MusicPath}" LoadedBehavior="Manual" UnloadedBehavior="Manual"/>
     </Grid>
 </UserControl>

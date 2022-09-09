@@ -1,4 +1,4 @@
-# ScreenSaver Extension [![Crowdin](https://badges.crowdin.net/screensaver/localized.svg)](https://crowdin.com)
+# <img src="https://github.com/cnapolit/ScreenSaver/blob/main/.github/icon.png" width="50"> ScreenSaver Extension [![Crowdin](https://badges.crowdin.net/screensaver/localized.svg)](https://crowdin.com)
 ScreenSaver is an extension to the Video Game Manager app <a href="https://github.com/JosefNemec/Playnite">Playnite</a>
 designed to display various content of Games as ScreenSavers. 
 

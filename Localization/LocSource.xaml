@@ -2,9 +2,12 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:sys="clr-namespace:System;assembly=mscorlib">
 
     <!-- Settings Resources -->
+    
     <sys:String x:Key="SETTINGS_HEADER">Settings</sys:String>
 
     <sys:String x:Key="SETTINGS_AUDIO_VOLUME">Audio Volume</sys:String>
+
+    <sys:String x:Key="SETTINGS_MONITOR">Monitor:</sys:String>
 
     <sys:String x:Key="SETTINGS_AUDIO_SOURCE">Source For Audio</sys:String>
     <sys:String x:Key="SETTINGS_ENUM_AUDIO_SOURCE_NONE">None</sys:String>
@@ -36,6 +39,8 @@
     <sys:String x:Key="SETTINGS_DISPLAY_CLOCK">Display Clock</sys:String>
 
     <!-- Settings Resources -->
+
+    <sys:String x:Key="SETTINGS_MONITOR_PRIMARY_INDICATOR"> (Primary)</sys:String>
 
     <sys:String x:Key="MENU_GROUPS">Groups</sys:String>
     <sys:String x:Key="MENU_PREVIEW">Preview</sys:String>

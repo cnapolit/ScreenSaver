@@ -52,6 +52,8 @@
                     <RowDefinition/>
                     <RowDefinition Height="5"/>
                     <RowDefinition/>
+                    <RowDefinition Height="5"/>
+                    <RowDefinition/>
                 </Grid.RowDefinitions>
                 <StackPanel Grid.Row="0" Orientation="Horizontal">
                     <Label Name="LblMusicVolume" Content="{DynamicResource SETTINGS_AUDIO_VOLUME}" d:LayoutOverrides="VerticalAlignment"/>
@@ -59,44 +61,46 @@
                     <Label Name="Percentage"     Content="{Binding Settings.Volume}" />
                     <Label Name="PercentageSign" Content="%"/>
                 </StackPanel>
-                <Slider   Grid.Row="0" Grid.Column="1" Name="VolumeSlider" Maximum="100" Value="{Binding Settings.Volume}"  AutoToolTipPlacement="TopLeft" VerticalAlignment="Center"/>
-                <Label    Grid.Row="2"                 Name="AudioSourceLabel" Content="{DynamicResource SETTINGS_AUDIO_SOURCE}" d:LayoutOverrides="VerticalAlignment"/>
-                <ComboBox Grid.Row="2" Grid.Column="1" Name="AudioSourceCombo" SelectedIndex="{Binding Settings.AudioSource, Converter={e:AudioSourceConverter}}" Height="20">
+                <Slider   Grid.Row="0" Grid.Column="1" Name="VolumeSlider" Maximum="100" Value="{Binding Settings.Volume}" AutoToolTipPlacement="TopLeft" VerticalAlignment="Center"/>
+                <Label    Grid.Row="2"                 Name="MonitorLabel" Content="{DynamicResource SETTINGS_MONITOR}" d:LayoutOverrides="VerticalAlignment"/>
+                <ComboBox Grid.Row="2" Grid.Column="1" Name="MonitorCombo" SelectedIndex="{Binding Settings.ScreenIndex}" Height="20"/>
+                <Label    Grid.Row="4"                 Name="AudioSourceLabel" Content="{DynamicResource SETTINGS_AUDIO_SOURCE}" d:LayoutOverrides="VerticalAlignment"/>
+                <ComboBox Grid.Row="4" Grid.Column="1" Name="AudioSourceCombo" SelectedIndex="{Binding Settings.AudioSource, Converter={e:AudioSourceConverter}}" Height="20">
                     <ComboBoxItem Content="{DynamicResource SETTINGS_ENUM_AUDIO_SOURCE_NONE}"/>
                     <ComboBoxItem Content="{DynamicResource SETTINGS_ENUM_AUDIO_SOURCE_VIDEO}"/>
                     <ComboBoxItem Content="{DynamicResource SETTINGS_ENUM_AUDIO_SOURCE_MUSIC}"/>
                 </ComboBox>
-                <Label    Grid.Row="4"                 Name="PlayStateLabel" Content="{DynamicResource SETTINGS_PLAY_STATE}" d:LayoutOverrides="VerticalAlignment"/>
-                <ComboBox Grid.Row="4" Grid.Column="1" Name="PlayStateCombo" SelectedIndex="{Binding Settings.PlayState, Converter={e:PlayStateConverter}}" Height="20">
+                <Label    Grid.Row="6"                 Name="PlayStateLabel" Content="{DynamicResource SETTINGS_PLAY_STATE}" d:LayoutOverrides="VerticalAlignment"/>
+                <ComboBox Grid.Row="6" Grid.Column="1" Name="PlayStateCombo" SelectedIndex="{Binding Settings.PlayState, Converter={e:PlayStateConverter}}" Height="20">
                     <ComboBoxItem Content="{DynamicResource SETTINGS_ENUM_PLAY_STATE_NEVER}"/>
                     <ComboBoxItem Content="{DynamicResource SETTINGS_ENUM_PLAY_STATE_DESKTOP}"/>
                     <ComboBoxItem Content="{DynamicResource SETTINGS_ENUM_PLAY_STATE_FULLSCREEN}"/>
                     <ComboBoxItem Content="{DynamicResource SETTINGS_ENUM_PLAY_STATE_ALWAYS}"/>
                 </ComboBox>
-                <Label     Grid.Row="6"   Grid.Column="0"       Name="GameTransLabel"   Content="{DynamicResource SETTINGS_GAME_TRANS}"/>
-                <l:UIntDUp Grid.Row="6"   Grid.Column="1"     x:Name="GameTransUpDown"   Width="40" Value="{Binding Settings.GameTransitionInterval}" HorizontalAlignment="Left"/>
-                <Label     Grid.Row="8"   Grid.Column="0"       Name="ScreenSaverLabel" Content="{DynamicResource SETTINGS_SVR_INTERVAL}"/>
-                <l:UIntDUp Grid.Row="8"   Grid.Column="1"     x:Name="ScreenSaverUpDown" Width="40" Value="{Binding Settings.ScreenSaverInterval}" HorizontalAlignment="Left"/>
-                <Label     Grid.Row="10"  Grid.Column="0"       Name="VideoCornerLabel" Content="{DynamicResource SETTINGS_VIDEO_CORNER}"/>
-                <l:UIntDUp Grid.Row="10"  Grid.Column="1"     x:Name="VideoCornerUpDown" Width="40" Value="{Binding Settings.VideoCornerRadius}" HorizontalAlignment="Left"/>
-                <Label     Grid.Row="12"  Grid.Column="0"       Name="ClockCornerLabel" Content="{DynamicResource SETTINGS_CLOCK_CORNER}"/>
-                <l:UIntDUp Grid.Row="12"  Grid.Column="1"     x:Name="ClockCornerUpDown" Width="40" Value="{Binding Settings.ClockCornerRadius}" HorizontalAlignment="Left"/>
-                <Label     Grid.Row="14"  Grid.Column="0"       Name="ClockFontSizeLabel" Content="{DynamicResource SETTINGS_CLOCK_FONT_SIZE}"/>
-                <l:UIntDUp Grid.Row="14"  Grid.Column="1"     x:Name="ClockFontSizeUpDown" Width="40" Value="{Binding Settings.ClockFontSize}" HorizontalAlignment="Left"/>
-                <Label     Grid.Row="16"  Grid.Column="0"       Name="ClockSubFontSizeLabel" Content="{DynamicResource SETTINGS_CLOCK_SUB_FONT_SIZE}"/>
-                <l:UIntDUp Grid.Row="16"  Grid.Column="1"     x:Name="ClockSubFontSizeUpDown" Width="40" Value="{Binding Settings.ClockSubFontSize}" HorizontalAlignment="Left"/>
-                <DockPanel Grid.Row="18" Grid.ColumnSpan="2" Margin="0,0,0,10">
+                <Label     Grid.Row="8"   Grid.Column="0"       Name="GameTransLabel"   Content="{DynamicResource SETTINGS_GAME_TRANS}"/>
+                <l:UIntDUp Grid.Row="8"   Grid.Column="1"     x:Name="GameTransUpDown"   Width="40" Value="{Binding Settings.GameTransitionInterval}" HorizontalAlignment="Left"/>
+                <Label     Grid.Row="10"   Grid.Column="0"       Name="ScreenSaverLabel" Content="{DynamicResource SETTINGS_SVR_INTERVAL}"/>
+                <l:UIntDUp Grid.Row="10"   Grid.Column="1"     x:Name="ScreenSaverUpDown" Width="40" Value="{Binding Settings.ScreenSaverInterval}" HorizontalAlignment="Left"/>
+                <Label     Grid.Row="12"  Grid.Column="0"       Name="VideoCornerLabel" Content="{DynamicResource SETTINGS_VIDEO_CORNER}"/>
+                <l:UIntDUp Grid.Row="12"  Grid.Column="1"     x:Name="VideoCornerUpDown" Width="40" Value="{Binding Settings.VideoCornerRadius}" HorizontalAlignment="Left"/>
+                <Label     Grid.Row="14"  Grid.Column="0"       Name="ClockCornerLabel" Content="{DynamicResource SETTINGS_CLOCK_CORNER}"/>
+                <l:UIntDUp Grid.Row="14"  Grid.Column="1"     x:Name="ClockCornerUpDown" Width="40" Value="{Binding Settings.ClockCornerRadius}" HorizontalAlignment="Left"/>
+                <Label     Grid.Row="16"  Grid.Column="0"       Name="ClockFontSizeLabel" Content="{DynamicResource SETTINGS_CLOCK_FONT_SIZE}"/>
+                <l:UIntDUp Grid.Row="16"  Grid.Column="1"     x:Name="ClockFontSizeUpDown" Width="40" Value="{Binding Settings.ClockFontSize}" HorizontalAlignment="Left"/>
+                <Label     Grid.Row="18"  Grid.Column="0"       Name="ClockSubFontSizeLabel" Content="{DynamicResource SETTINGS_CLOCK_SUB_FONT_SIZE}"/>
+                <l:UIntDUp Grid.Row="18"  Grid.Column="1"     x:Name="ClockSubFontSizeUpDown" Width="40" Value="{Binding Settings.ClockSubFontSize}" HorizontalAlignment="Left"/>
+                <DockPanel Grid.Row="20" Grid.ColumnSpan="2" Margin="0,0,0,10">
                     <TextBlock Text="{DynamicResource SETTINGS_CLOCK_FONT}" DockPanel.Dock="Left" VerticalAlignment="Center"/>
                     <TextBox Margin="10,0,0,0" Text="{Binding Settings.ClockFont}"/>
                 </DockPanel>
-                <CheckBox  Grid.Row="20" Grid.ColumnSpan="2"   Name="CheckDisplayClock"   IsChecked="{Binding Settings.DisplayClock}"        Content="{DynamicResource SETTINGS_DISPLAY_CLOCK}"/>
-                <CheckBox  Grid.Row="22" Grid.ColumnSpan="2"   Name="CheckBackgroundSkip" IsChecked="{Binding Settings.BackgroundSkip}"      Content="{DynamicResource SETTINGS_BCKGRD_SKIP}"/>
-                <CheckBox  Grid.Row="24" Grid.ColumnSpan="2"   Name="CheckVideoSkip"      IsChecked="{Binding Settings.VideoSkip}"           Content="{DynamicResource SETTINGS_VIDEO_SKIP}"/>
-                <CheckBox  Grid.Row="26" Grid.ColumnSpan="2"   Name="CheckMusicSkip"      IsChecked="{Binding Settings.MusicSkip}"           Content="{DynamicResource SETTINGS_MUSIC_SKIP}"/>
-                <CheckBox  Grid.Row="28" Grid.ColumnSpan="2"   Name="CheckLogoSkip"       IsChecked="{Binding Settings.LogoSkip}"            Content="{DynamicResource SETTINGS_LOGO_SKIP}"/>
-                <CheckBox  Grid.Row="30" Grid.ColumnSpan="2"   Name="CheckPlayBackup"     IsChecked="{Binding Settings.PlayBackup}"          Content="{DynamicResource SETTINGS_PLAY_BACKUP}"/>
-                <CheckBox  Grid.Row="32" Grid.ColumnSpan="2"   Name="CheckDisablePlay"    IsChecked="{Binding Settings.DisableWhilePlaying}" Content="{DynamicResource SETTINGS_DISABLE_WHILE_PLAY}"/>
-                <CheckBox  Grid.Row="34" Grid.ColumnSpan="2"   Name="CheckPauseOnDeac"    IsChecked="{Binding Settings.PauseOnDeactivate}"   Content="{DynamicResource SETTINGS_PAUSE_ON_DEAC}"/>
+                <CheckBox  Grid.Row="22" Grid.ColumnSpan="2"   Name="CheckDisplayClock"   IsChecked="{Binding Settings.DisplayClock}"        Content="{DynamicResource SETTINGS_DISPLAY_CLOCK}"/>
+                <CheckBox  Grid.Row="24" Grid.ColumnSpan="2"   Name="CheckBackgroundSkip" IsChecked="{Binding Settings.BackgroundSkip}"      Content="{DynamicResource SETTINGS_BCKGRD_SKIP}"/>
+                <CheckBox  Grid.Row="26" Grid.ColumnSpan="2"   Name="CheckVideoSkip"      IsChecked="{Binding Settings.VideoSkip}"           Content="{DynamicResource SETTINGS_VIDEO_SKIP}"/>
+                <CheckBox  Grid.Row="28" Grid.ColumnSpan="2"   Name="CheckMusicSkip"      IsChecked="{Binding Settings.MusicSkip}"           Content="{DynamicResource SETTINGS_MUSIC_SKIP}"/>
+                <CheckBox  Grid.Row="30" Grid.ColumnSpan="2"   Name="CheckLogoSkip"       IsChecked="{Binding Settings.LogoSkip}"            Content="{DynamicResource SETTINGS_LOGO_SKIP}"/>
+                <CheckBox  Grid.Row="32" Grid.ColumnSpan="2"   Name="CheckPlayBackup"     IsChecked="{Binding Settings.PlayBackup}"          Content="{DynamicResource SETTINGS_PLAY_BACKUP}"/>
+                <CheckBox  Grid.Row="34" Grid.ColumnSpan="2"   Name="CheckDisablePlay"    IsChecked="{Binding Settings.DisableWhilePlaying}" Content="{DynamicResource SETTINGS_DISABLE_WHILE_PLAY}"/>
+                <CheckBox  Grid.Row="36" Grid.ColumnSpan="2"   Name="CheckPauseOnDeac"    IsChecked="{Binding Settings.PauseOnDeactivate}"   Content="{DynamicResource SETTINGS_PAUSE_ON_DEAC}"/>
             </Grid>
         </GroupBox>
     </StackPanel>

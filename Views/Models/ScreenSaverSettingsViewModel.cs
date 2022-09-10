@@ -8,7 +8,7 @@ namespace ScreenSaver.Views.Models
     public class ScreenSaverSettingsViewModel : ObservableObject, ISettings
     {
         private readonly ScreenSaverPlugin plugin;
-        private ScreenSaverSettings editingClone { get; set; }
+        private ScreenSaverSettings EditingClone { get; set; }
 
         private ScreenSaverSettings settings;
         public ScreenSaverSettings Settings
@@ -27,24 +27,24 @@ namespace ScreenSaver.Views.Models
 
             var savedSettings = plugin.LoadPluginSettings<ScreenSaverSettings>();
 
-            if (savedSettings != null)
+            if (savedSettings is null)
             {
-                Settings = savedSettings;
+                Settings = new ScreenSaverSettings();
             }
             else
             {
-                Settings = new ScreenSaverSettings();
+                Settings = savedSettings;
             }
         }
 
         public void BeginEdit()
         {
-            editingClone = Serialization.GetClone(Settings);
+            EditingClone = Serialization.GetClone(Settings);
         }
 
         public void CancelEdit()
         {
-            Settings = editingClone;
+            Settings = EditingClone;
         }
 
         public void EndEdit()

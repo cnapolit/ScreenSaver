@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Forms;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
@@ -84,22 +85,24 @@ namespace ScreenSaver.Services.UI.Windows
             secondScreenSaverWindow?.Close();
             MuteBackgroundMusic();
 
+            var screen =  Screen.AllScreens[_settings.ScreenIndex];
             blackgroundWindow = new Window
             {
                 Background = Brushes.Black,
                 WindowStyle = WindowStyle.None,
                 ResizeMode = ResizeMode.NoResize,
                 WindowState = WindowState.Maximized,
-                WindowStartupLocation = WindowStartupLocation.CenterScreen,
                 Focusable = false,
                 AllowsTransparency = true,
                 Opacity = 0,
-                Topmost = true
+                Topmost = true,
+                Top = screen.Bounds.Top,
+                Left = screen.Bounds.Left
             };
             blackgroundWindow.Show();
 
-            secondScreenSaverWindow = CreateScreenSaverLayerWindow(null);
-            firstScreenSaverWindow  = CreateScreenSaverLayerWindow(gameContent);
+            secondScreenSaverWindow = CreateScreenSaverLayerWindow(null, screen);
+            firstScreenSaverWindow  = CreateScreenSaverLayerWindow(gameContent, screen);
 
             var newContent = firstScreenSaverWindow.Content as ScreenSaverImage;
             var volume = _settings.Volume / 100.0;
@@ -275,8 +278,9 @@ namespace ScreenSaver.Services.UI.Windows
 
         private void Preview(Game game, Action onCloseCallBack)
         {
+            var screen = Screen.AllScreens[_settings.ScreenIndex];
             var gameContent = _gameContentFactory.ConstructGameContent(game);
-            firstScreenSaverWindow = CreateScreenSaverLayerWindow(gameContent);
+            firstScreenSaverWindow = CreateScreenSaverLayerWindow(gameContent, screen);
             firstScreenSaverWindow.Closed += (_, __) => onCloseCallBack();
             firstScreenSaverWindow.Opacity = 1;
             PlayMedia(firstScreenSaverWindow.Content, gameContent);
@@ -309,20 +313,21 @@ namespace ScreenSaver.Services.UI.Windows
 
         #region Helpers
 
-        private Window CreateScreenSaverLayerWindow(GameContent gameContent)
+        private Window CreateScreenSaverLayerWindow(GameContent gameContent, Screen screen)
         {
             var window = new Window
             {
                 WindowStyle = WindowStyle.None,
                 ResizeMode = ResizeMode.NoResize,
                 WindowState = WindowState.Maximized,
-                WindowStartupLocation = WindowStartupLocation.CenterScreen,
                 Focusable = true,
                 // Window is set to topmost to make sure another window won't show over it
                 Topmost = true,
                 AllowsTransparency = true,
                 Opacity = 0,
-                Background = Brushes.Transparent
+                Background = Brushes.Transparent,
+                Top = screen.Bounds.Top,
+                Left = screen.Bounds.Left
             };
 
             var time = DateTime.Now;

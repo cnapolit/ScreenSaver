@@ -6,6 +6,7 @@
 
     <sys:String x:Key="SETTINGS_AUDIO_VOLUME">Audio Volume</sys:String>
 
+    <sys:String x:Key="SETTINGS_MONITOR">Monitor:</sys:String>
     <sys:String x:Key="SETTINGS_AUDIO_SOURCE">Source For Audio</sys:String>
     <sys:String x:Key="SETTINGS_ENUM_AUDIO_SOURCE_NONE">None</sys:String>
     <sys:String x:Key="SETTINGS_ENUM_AUDIO_SOURCE_VIDEO">Video</sys:String>
@@ -39,6 +40,7 @@
 
     <sys:String x:Key="MENU_GROUPS">Groups</sys:String>
     <sys:String x:Key="MENU_PREVIEW">Preview</sys:String>
+    <sys:String x:Key="SETTINGS_MONITOR_PRIMARY_INDICATOR"> (Primary)</sys:String>
     <sys:String x:Key="MENU_DELETE">Delete</sys:String>
     <sys:String x:Key="MENU_PROMPT_SORT">Please select a field to sort by:</sys:String>
     <sys:String x:Key="MENU_PROMPT_ASC">Should the group be sorted in ascending order?</sys:String>

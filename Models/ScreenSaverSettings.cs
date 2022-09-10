@@ -1,5 +1,8 @@
 ﻿using ScreenSaver.Models.Enums;
+using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Windows.Forms;
 
 namespace ScreenSaver.Models
 {
@@ -25,5 +28,21 @@ namespace ScreenSaver.Models
         public bool PauseOnDeactivate { get; set; } = true;
         public AudioSource AudioSource { get; set; } = AudioSource.Music;
         public PlayState PlayState { get; set; } = PlayState.FullScreen;
+
+        private string _monitorName = Screen.PrimaryScreen.DeviceName;
+        public uint ScreenIndex 
+        { 
+            get
+            { 
+                var index = Array.FindIndex(Screen.AllScreens, s => s.DeviceName == _monitorName);
+                if (index < 0)
+                {
+                    index = Array.FindIndex(Screen.AllScreens, s => s.DeviceName == Screen.PrimaryScreen.DeviceName);
+                }
+
+                return index < 0 ? 0 : (uint)index;
+            }
+            set => _monitorName = Screen.AllScreens[value].DeviceName;
+        }
     }
 }

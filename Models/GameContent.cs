@@ -1,6 +1,6 @@
 ﻿using Playnite.SDK.Models;
 
-namespace ScreenSaver.Models.GameContent
+namespace ScreenSaver.Models
 {
     internal class GameContent
     {

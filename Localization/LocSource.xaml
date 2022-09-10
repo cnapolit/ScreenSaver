@@ -2,8 +2,12 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:sys="clr-namespace:System;assembly=mscorlib">
 
     <!-- Settings Resources -->
-    
+
     <sys:String x:Key="SETTINGS_HEADER">Settings</sys:String>
+    <sys:String x:Key="SETTINGS_HEADER_GENERAL">General</sys:String>
+    <sys:String x:Key="SETTINGS_HEADER_VIDEO">Video</sys:String>
+    <sys:String x:Key="SETTINGS_HEADER_AUDIO">Audio</sys:String>
+    <sys:String x:Key="SETTINGS_HEADER_ClOCK">Clock</sys:String>
 
     <sys:String x:Key="SETTINGS_AUDIO_VOLUME">Audio Volume</sys:String>
 
@@ -34,13 +38,17 @@
     <sys:String x:Key="SETTINGS_LOGO_SKIP">Skip Games Missing Logos</sys:String>
 
     <sys:String x:Key="SETTINGS_PLAY_BACKUP">Play backup audio if selected is missing</sys:String>
+    <sys:String x:Key="SETTINGS_USE_MICRO">Use Micro Trailer</sys:String>
+    <sys:String x:Key="SETTINGS_VIDEO_BACKUP">Play backup video if selected is missing</sys:String>
     <sys:String x:Key="SETTINGS_DISABLE_WHILE_PLAY">Disable ScreenSaver while Playing</sys:String>
     <sys:String x:Key="SETTINGS_PAUSE_ON_DEAC">Disable ScreenSaver When Not In Use</sys:String>
     <sys:String x:Key="SETTINGS_DISPLAY_CLOCK">Display Clock</sys:String>
+    <sys:String x:Key="SETTINGS_DISPLAY_VIDEO">Display Video</sys:String>
+    <sys:String x:Key="SETTINGS_DISPLAY_LOGO">Display Logo</sys:String>
 
     <!-- Settings Resources -->
 
-    <sys:String x:Key="SETTINGS_MONITOR_PRIMARY_INDICATOR"> (Primary)</sys:String>
+    <sys:String x:Key="SETTINGS_MONITOR_PRIMARY_INDICATOR">(Primary)</sys:String>
 
     <sys:String x:Key="MENU_GROUPS">Groups</sys:String>
     <sys:String x:Key="MENU_PREVIEW">Preview</sys:String>

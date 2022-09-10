@@ -102,24 +102,37 @@
     <Compile Include="Models\GameGroup.cs" />
     <Compile Include="Services\GameGroupManager\GameGroupManager.cs" />
     <Compile Include="Services\GameGroupManager\IGameGroupManager.cs" />
+    <Compile Include="Services\UI\Converters\BoolConverters.cs" />
     <Compile Include="Services\UI\Localization\Localization.cs" />
-    <Compile Include="Services\UI\EnumConverter\EnumConverter.cs" />
+    <Compile Include="Services\UI\Converters\EnumConverters.cs" />
     <Compile Include="Common\Constants\Resource.cs" />
     <Compile Include="Models\Enums\AudioSource.cs" />
     <Compile Include="Models\Enums\PlayState.cs" />
     <Compile Include="Models\ScreenSaverSettings.cs" />
-    <Compile Include="Models\GameContent\GameContent.cs" />
-    <Compile Include="Models\GameContent\GameContentFactory.cs" />
-    <Compile Include="Models\GameContent\IGameContentFactory.cs" />
+    <Compile Include="Models\GameContent.cs" />
+    <Compile Include="Services\GameContentFactory\GameContentFactory.cs" />
+    <Compile Include="Services\GameContentFactory\IGameContentFactory.cs" />
     <Compile Include="Models\Imports\MouseMessages.cs" />
     <Compile Include="Models\Imports\MsLLHook.cs" />
     <Compile Include="Models\Imports\Point.cs" />
+    <Compile Include="Views\Layouts\ScreenSaverSettings\AudioSettings.xaml.cs">
+      <DependentUpon>AudioSettings.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\Layouts\ScreenSaverImage.xaml.cs">
       <DependentUpon>ScreenSaverImage.xaml</DependentUpon>
     </Compile>
     <Compile Include="ScreenSaverPlugin.cs" />
+    <Compile Include="Views\Layouts\ScreenSaverSettings\ClockSettings.xaml.cs">
+      <DependentUpon>ClockSettings.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Layouts\ScreenSaverSettings\GeneralSettings.xaml.cs">
+      <DependentUpon>GeneralSettings.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Layouts\ScreenSaverSettings\VideoSettings.xaml.cs">
+      <DependentUpon>VideoSettings.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\Models\ScreenSaverSettingsViewModel.cs" />
-    <Compile Include="Views\Layouts\ScreenSaverSettingsView.xaml.cs">
+    <Compile Include="Views\Layouts\ScreenSaverSettings\ScreenSaverSettingsView.xaml.cs">
       <DependentUpon>ScreenSaverSettingsView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -295,11 +308,23 @@
       <SubType>Designer</SubType>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <Page Include="Views\Layouts\ScreenSaverSettings\AudioSettings.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views\Layouts\ScreenSaverImage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views\Layouts\ScreenSaverSettingsView.xaml">
+    <Page Include="Views\Layouts\ScreenSaverSettings\ClockSettings.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\Layouts\ScreenSaverSettings\GeneralSettings.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\Layouts\ScreenSaverSettings\ScreenSaverSettingsView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -343,6 +368,10 @@
       <SubType>Designer</SubType>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <Page Include="Views\Layouts\ScreenSaverSettings\VideoSettings.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <None Include="icon.png">

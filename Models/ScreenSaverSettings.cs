@@ -1,7 +1,6 @@
 ﻿using ScreenSaver.Models.Enums;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Windows.Forms;
 
 namespace ScreenSaver.Models
@@ -22,8 +21,10 @@ namespace ScreenSaver.Models
         public bool VideoSkip { get; set; } = false;
         public bool MusicSkip { get; set; } = false;
         public bool LogoSkip { get; set; } = false;
-        public bool IncludeVideo { get; set; } = true;
-        public bool IncludeLogo { get; set; } = true;
+        public bool DisplayVideo { get; set; } = true;
+        public bool UseMicroTrailer { get; set; } = false;
+        public bool VideoBackup { get; set; } = false;
+        public bool DisplayLogo { get; set; } = true;
         public bool DisableWhilePlaying { get; set; } = true;
         public bool PauseOnDeactivate { get; set; } = true;
         public AudioSource AudioSource { get; set; } = AudioSource.Music;

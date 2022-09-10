@@ -1,0 +1,27 @@
+﻿<UserControl x:Class="ScreenSaver.Views.Layouts.ScreenSaverSettings.ScreenSaverSettingsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             mc:Ignorable="d"
+             xmlns:l="clr-namespace:ScreenSaver.Views.Layouts.ScreenSaverSettings"
+             xmlns:s="clr-namespace:ScreenSaver.Views.Models"
+             d:DataContext="{d:DesignInstance Type=s:ScreenSaverSettingsViewModel}"
+             d:DesignHeight="460">
+    <ScrollViewer>
+        <StackPanel Margin="2">
+            <GroupBox Header="{DynamicResource SETTINGS_HEADER_GENERAL}" Margin="0,5,0,0">
+                <l:GeneralSettings/>
+            </GroupBox>
+            <GroupBox Header="{DynamicResource SETTINGS_HEADER_VIDEO}" Margin="0,5,0,0">
+                <l:VideoSettings/>
+            </GroupBox>
+            <GroupBox Header="{DynamicResource SETTINGS_HEADER_AUDIO}" Margin="0,5,0,0">
+                <l:AudioSettings/>
+            </GroupBox>
+            <GroupBox Header="{DynamicResource SETTINGS_HEADER_ClOCK}" Margin="0,5,0,0">
+                <l:ClockSettings/>
+            </GroupBox>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

@@ -4,7 +4,6 @@ using ScreenSaver.Common.Constants;
 using ScreenSaver.Common.Extensions;
 using ScreenSaver.Models;
 using ScreenSaver.Models.Enums;
-using ScreenSaver.Models.GameContent;
 using ScreenSaver.Views.Layouts;
 using System;
 using System.Collections.Generic;
@@ -47,11 +46,11 @@ namespace ScreenSaver.Services.UI.Windows
 
         public WindowsManager(IPlayniteAPI playniteApi, IGameGroupManager gameGroupManager, ScreenSaverSettings settings, Action onStopCallBack)
         {
-            _settings           =                            settings;
-            _playniteApi        =                         playniteApi;
-            _onStopCallBack     =                      onStopCallBack;
-            _gameGroupManager   =                    gameGroupManager;
-            _gameContentFactory = new GameContentFactory(playniteApi);
+            _settings           =         settings;
+            _playniteApi        =      playniteApi;
+            _onStopCallBack     =   onStopCallBack;
+            _gameGroupManager   = gameGroupManager;
+            _gameContentFactory = new GameContentFactory(playniteApi, settings);
         }
 
         #endregion
@@ -63,7 +62,7 @@ namespace ScreenSaver.Services.UI.Windows
         public void UpdateScreenSaver     (                                            ) => Update     (                   );
         public void UpdateScreenSaverTime (                                            ) => UpdateTime (                   );
         public void PreviewScreenSaver    (Game game, Action              closeCallBack) => Preview    (game, closeCallBack);
-        public void UpdateSettings        (           ScreenSaverSettings      settings) =>             _settings = settings;
+        public void UpdateSettings        (           ScreenSaverSettings      settings) => UpdateSetting(settings);
 
         #endregion
 
@@ -212,7 +211,7 @@ namespace ScreenSaver.Services.UI.Windows
                 ? null
                 : new BitmapImage(new Uri(gameContent.BackgroundPath));
 
-            if (_settings.IncludeLogo)
+            if (_settings.DisplayLogo)
             {
                 context.LogoPath = gameContent.LogoPath;
                 newContent.LogoImage.Source = gameContent.LogoPath is null
@@ -220,7 +219,7 @@ namespace ScreenSaver.Services.UI.Windows
                     : new BitmapImage(new Uri(gameContent.LogoPath));
             }
 
-            if (_settings.IncludeVideo)
+            if (_settings.DisplayVideo)
             {
                 context.VideoPath = gameContent.VideoPath;
                 if (gameContent.VideoPath != null)
@@ -311,6 +310,14 @@ namespace ScreenSaver.Services.UI.Windows
 
         #endregion
 
+        #region UpdateSettings
+        private void UpdateSetting(ScreenSaverSettings settings)
+        {
+            _settings = settings;
+            _gameContentFactory.UpdateSettings(settings);
+        }
+        #endregion
+
         #region Helpers
 
         private Window CreateScreenSaverLayerWindow(GameContent gameContent, Screen screen)
@@ -349,7 +356,9 @@ namespace ScreenSaver.Services.UI.Windows
             var volume = _settings.Volume / 100.0;
             content.VideoPlayer.Volume = volume;
             content.MusicPlayer.Volume = volume;
-            content.LogoImage.Visibility = _settings.IncludeLogo ? Visibility.Visible : Visibility.Hidden;
+
+            content.Video.Visibility = _settings.DisplayVideo ? Visibility.Visible : Visibility.Hidden;
+            content.LogoImage.Visibility = _settings.DisplayLogo ? Visibility.Visible : Visibility.Hidden;
             content.Clock.Visibility = _settings.DisplayClock ? Visibility.Visible : Visibility.Hidden;
 
             window.Content = content;
@@ -428,7 +437,7 @@ namespace ScreenSaver.Services.UI.Windows
 
         private void PlayVideo(MediaElement videoPlayer, string musicPath)
         {
-            if (_settings.IncludeVideo)
+            if (_settings.DisplayVideo)
             {
                 videoPlayer.IsMuted = !ShouldPlayVideoAudio(musicPath);
                 videoPlayer.Play();

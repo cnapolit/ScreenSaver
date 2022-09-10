@@ -1,25 +1,46 @@
 ﻿using Playnite.SDK;
 using Playnite.SDK.Models;
 using ScreenSaver.Common.Constants;
+using ScreenSaver.Models;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
-namespace ScreenSaver.Models.GameContent
+namespace ScreenSaver.Services
 {
     internal class GameContentFactory : IGameContentFactory
     {
-        private readonly IPlayniteAPI      _playniteApi;
-        private readonly string       ExtraMetaDataPath;
-        private readonly string              SoundsPath;
-        public GameContentFactory(IPlayniteAPI playniteApi)
+        #region Infrastructure
+
+        private readonly IPlayniteAPI                _playniteApi;
+        private          ScreenSaverSettings            _settings;
+        private readonly string                 ExtraMetaDataPath;
+        private readonly string                        SoundsPath;
+        private          string                    _videoFileName;
+        private          string              _backupVideoFileName;
+
+        public GameContentFactory(IPlayniteAPI playniteApi, ScreenSaverSettings settings)
         {
             _playniteApi = playniteApi;
             ExtraMetaDataPath = Path.Combine( _playniteApi.Paths.ConfigurationPath, Files. MetaDataPath);
             SoundsPath        = Path.Combine(_playniteApi.Paths.ExtensionsDataPath, Files.   SoundsPath);
+            Update(settings);
         }
 
-        public GameContent ConstructGameContent(Game game)
+        #endregion
+
+        #region Interface
+
+        public GameContent ConstructGameContent(Game game) => Construct(game);
+        public void UpdateSettings(ScreenSaverSettings settings) => Update(settings);
+
+        #endregion
+
+        #region Implementation
+
+        #region ConstructGameContent
+
+        private GameContent Construct(Game game)
         {
             var idString = game.Id.ToString();
             return new GameContent
@@ -32,8 +53,17 @@ namespace ScreenSaver.Models.GameContent
             };
         }
 
+        private string GetVideoPath(string gameId)
+        {
+            var path = GetExtraPath(gameId, _videoFileName);
+            if (_settings.VideoBackup && path is null)
+            {
+                path = GetExtraPath(gameId, _backupVideoFileName);
+            }
+            return path;
+        }
+
         private string GetLogoPath(string gameId) => GetExtraPath(gameId, Files.Logo);
-        private string GetVideoPath(string gameId) => GetExtraPath(gameId, Files.Video);
         private string GetExtraPath(string gameId, string fileName)
         {
             var videoPath = Path.Combine(ExtraMetaDataPath, gameId, fileName);
@@ -64,5 +94,20 @@ namespace ScreenSaver.Models.GameContent
 
             return null;
         }
+
+        #endregion
+
+        #region UpdateSettings
+
+        private void Update(ScreenSaverSettings settings)
+        {
+            _settings = settings;
+            _videoFileName = settings.UseMicroTrailer ? Files.Video : Files.Micro;
+            _backupVideoFileName = settings.UseMicroTrailer ? Files.Micro : Files.Video;
+        }
+
+        #endregion
+
+        #endregion
     }
 }

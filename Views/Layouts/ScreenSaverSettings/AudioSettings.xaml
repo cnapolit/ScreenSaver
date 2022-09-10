@@ -1,0 +1,41 @@
+﻿<UserControl x:Class="ScreenSaver.Views.Layouts.ScreenSaverSettings.AudioSettings"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             mc:Ignorable="d"
+             xmlns:s="clr-namespace:ScreenSaver.Views.Models"
+             xmlns:c="clr-namespace:ScreenSaver.Services.UI.Converters"
+             d:DataContext="{d:DesignInstance Type=s:ScreenSaverSettingsViewModel}"
+             d:DesignHeight="460">
+    <Grid>
+        <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+             <RowDefinition/>
+            <RowDefinition Height="5"/>
+            <RowDefinition/>
+            <RowDefinition Height="5"/>
+            <RowDefinition/>
+            <RowDefinition Height="5"/>
+            <RowDefinition/>
+            <RowDefinition Height="5"/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+        <CheckBox Grid.Row="0" Grid.ColumnSpan="2" Name="CheckMusicSkip"  IsChecked="{Binding Settings.MusicSkip}"  Content="{DynamicResource SETTINGS_MUSIC_SKIP}"
+                  IsEnabled="{Binding ElementName=MusicItem, Path=IsSelected}"/>
+        <CheckBox Grid.Row="2" Grid.ColumnSpan="2" Name="CheckPlayBackup" IsChecked="{Binding Settings.PlayBackup}" Content="{DynamicResource SETTINGS_PLAY_BACKUP}"/>
+        <Label    Grid.Row="4"                     Name="AudioSourceLabel" Content="{DynamicResource SETTINGS_AUDIO_SOURCE}" d:LayoutOverrides="VerticalAlignment"/>
+        <ComboBox Grid.Row="4" Grid.Column="1"     Name="AudioSourceCombo" SelectedIndex="{Binding Settings.AudioSource, Converter={c:AudioSourceConverter}}" Height="20">
+            <ComboBoxItem Content="{DynamicResource SETTINGS_ENUM_AUDIO_SOURCE_NONE}"/>
+            <ComboBoxItem Content="{DynamicResource SETTINGS_ENUM_AUDIO_SOURCE_VIDEO}"/>
+            <ComboBoxItem Content="{DynamicResource SETTINGS_ENUM_AUDIO_SOURCE_MUSIC}" Name="MusicItem"/>
+        </ComboBox>
+        <StackPanel Grid.Row="6" Orientation="Horizontal">
+            <Label Name="LblMusicVolume" Content="{DynamicResource SETTINGS_AUDIO_VOLUME}" d:LayoutOverrides="VerticalAlignment"/>
+            <Label Name="LblSpace"       Content=" "/>
+            <Label Name="Percentage"     Content="{Binding Settings.Volume}" />
+            <Label Name="PercentageSign" Content="%"/>
+        </StackPanel>
+        <Slider Grid.Row="8" Grid.Column="1" Name="VolumeSlider" Maximum="100" Value="{Binding Settings.Volume}" AutoToolTipPlacement="TopLeft" VerticalAlignment="Center"/>
+    </Grid>
+</UserControl>

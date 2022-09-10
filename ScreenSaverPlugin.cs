@@ -3,14 +3,14 @@ using Playnite.SDK.Events;
 using Playnite.SDK.Plugins;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Windows.Controls;
 using ScreenSaver.Services.State.ScreenSaver;
 using ScreenSaver.Services.UI.Menus;
 using ScreenSaver.Services;
 using ScreenSaver.Models;
-using ScreenSaver.Views.Layouts;
 using ScreenSaver.Views.Models;
-using System.Linq;
+using ScreenSaver.Views.Layouts.ScreenSaverSettings;
 
 namespace ScreenSaver
 {

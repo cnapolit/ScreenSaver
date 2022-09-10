@@ -59,10 +59,10 @@
                     <Grid.OpacityMask>
                         <VisualBrush Visual="{Binding ElementName=mask}"/>
                     </Grid.OpacityMask>
-                    <MediaElement Name="VideoPlayer" Stretch="Uniform"  Source="{Binding VideoPath}" IsMuted="True" LoadedBehavior="Play" UnloadedBehavior="Manual"/>
+                    <MediaElement Name="VideoPlayer" Stretch="Uniform"  Source="{Binding VideoPath}" IsMuted="True" LoadedBehavior="Manual" UnloadedBehavior="Manual" MediaEnded="OnEnd"/>
                 </Grid>
             </Grid>
         </Border>
-        <MediaElement Name="MusicPlayer" Source="{Binding MusicPath}" LoadedBehavior="Manual" UnloadedBehavior="Manual"/>
+        <MediaElement Name="MusicPlayer" Source="{Binding MusicPath}" LoadedBehavior="Manual" UnloadedBehavior="Manual" MediaEnded="OnEnd"/>
     </Grid>
 </UserControl>

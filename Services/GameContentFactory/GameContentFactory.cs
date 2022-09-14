@@ -15,7 +15,6 @@ namespace ScreenSaver.Services
         private readonly IPlayniteAPI                _playniteApi;
         private          ScreenSaverSettings            _settings;
         private readonly string                 ExtraMetaDataPath;
-        private readonly string                        SoundsPath;
         private          string                    _videoFileName;
         private          string              _backupVideoFileName;
 
@@ -23,7 +22,6 @@ namespace ScreenSaver.Services
         {
             _playniteApi = playniteApi;
             ExtraMetaDataPath = Path.Combine( _playniteApi.Paths.ConfigurationPath, Files. MetaDataPath);
-            SoundsPath        = Path.Combine(_playniteApi.Paths.ExtensionsDataPath, Files.   SoundsPath);
             Update(settings);
         }
 
@@ -74,7 +72,7 @@ namespace ScreenSaver.Services
 
         private string GetMusicPath(string gameId)
         {
-            var soundDirectory = Path.Combine(SoundsPath, gameId);
+            var soundDirectory = Path.Combine(ExtraMetaDataPath, gameId, Files.SoundsDirectory);
             return Directory.Exists(soundDirectory)
                 ? Directory.GetFiles(soundDirectory).FirstOrDefault()
                 : null;

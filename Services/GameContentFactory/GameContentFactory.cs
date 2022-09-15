@@ -64,9 +64,9 @@ namespace ScreenSaver.Services
         private string GetLogoPath(string gameId) => GetExtraPath(gameId, Files.Logo);
         private string GetExtraPath(string gameId, string fileName)
         {
-            var videoPath = Path.Combine(ExtraMetaDataPath, gameId, fileName);
-            return File.Exists(videoPath)
-                ? videoPath
+            var extraPath = Path.Combine(ExtraMetaDataPath, gameId, fileName);
+            return File.Exists(extraPath)
+                ? extraPath
                 : null;
         }
 
@@ -100,8 +100,8 @@ namespace ScreenSaver.Services
         private void Update(ScreenSaverSettings settings)
         {
             _settings = settings;
-            _videoFileName = settings.UseMicroTrailer ? Files.Video : Files.Micro;
-            _backupVideoFileName = settings.UseMicroTrailer ? Files.Micro : Files.Video;
+            _videoFileName = settings.UseMicroTrailer ? Files.Micro : Files.Video;
+            _backupVideoFileName = settings.UseMicroTrailer ? Files.Video : Files.Micro;
         }
 
         #endregion

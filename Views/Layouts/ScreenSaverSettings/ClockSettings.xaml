@@ -24,12 +24,18 @@
             <RowDefinition/>
         </Grid.RowDefinitions>
         <CheckBox  Grid.Row="0"  Grid.ColumnSpan="2"   Name="CheckDisplayClock" Content="{DynamicResource SETTINGS_DISPLAY_CLOCK}" IsChecked="{Binding Settings.DisplayClock}"/>
-        <Label     Grid.Row="2"  Grid.Column="0"       Name="ClockCornerLabel" Content="{DynamicResource SETTINGS_CLOCK_CORNER}"/>
-        <l:UIntDUp Grid.Row="2"  Grid.Column="1"     x:Name="ClockCornerUpDown" Width="40" Value="{Binding Settings.ClockCornerRadius}"     HorizontalAlignment="Left"/>
-        <Label     Grid.Row="4"  Grid.Column="0"       Name="ClockFontSizeLabel" Content="{DynamicResource SETTINGS_CLOCK_FONT_SIZE}"/>
-        <l:UIntDUp Grid.Row="4"  Grid.Column="1"     x:Name="ClockFontSizeUpDown" Width="40" Value="{Binding Settings.ClockFontSize}"       HorizontalAlignment="Left"/>
-        <Label     Grid.Row="6"  Grid.Column="0"       Name="ClockSubFontSizeLabel" Content="{DynamicResource SETTINGS_CLOCK_SUB_FONT_SIZE}"/>
-        <l:UIntDUp Grid.Row="6"  Grid.Column="1"     x:Name="ClockSubFontSizeUpDown" Width="40" Value="{Binding Settings.ClockSubFontSize}" HorizontalAlignment="Left"/>
+        <StackPanel Grid.Row="2" Grid.ColumnSpan="2" Orientation="Horizontal">
+            <l:UIntDUp Value="{Binding Settings.ClockCornerRadius}" HorizontalAlignment="Left"  Margin="0 0 5 0"/>
+            <Label     Content="{DynamicResource SETTINGS_CLOCK_CORNER}"  HorizontalAlignment="Left"/>
+        </StackPanel>
+        <StackPanel Grid.Row="4" Grid.ColumnSpan="2" Orientation="Horizontal">
+            <l:UIntDUp Value="{Binding Settings.ClockFontSize}" HorizontalAlignment="Left"  Margin="0 0 5 0"/>
+            <Label     Content="{DynamicResource SETTINGS_CLOCK_FONT_SIZE}"  HorizontalAlignment="Left"/>
+        </StackPanel>
+        <StackPanel Grid.Row="6" Grid.ColumnSpan="2" Orientation="Horizontal">
+            <l:UIntDUp Value="{Binding Settings.ClockSubFontSize}" HorizontalAlignment="Left"  Margin="0 0 5 0"/>
+            <Label     Content="{DynamicResource SETTINGS_CLOCK_SUB_FONT_SIZE}"  HorizontalAlignment="Left"/>
+        </StackPanel>
         <DockPanel Grid.Row="8"  Grid.ColumnSpan="2" Margin="0,0,0,10">
             <TextBlock Text="{DynamicResource SETTINGS_CLOCK_FONT}" DockPanel.Dock="Left" VerticalAlignment="Center"/>
             <TextBox   Text="{Binding Settings.ClockFont}" Margin="10,0,0,0" />

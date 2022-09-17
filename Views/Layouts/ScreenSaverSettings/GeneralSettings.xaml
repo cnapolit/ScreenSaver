@@ -42,10 +42,14 @@
                    Content="{DynamicResource SETTINGS_DISABLE_WHILE_PLAY}"/>
         <CheckBox  Grid.Row="8" Grid.ColumnSpan="2" Name="CheckPauseOnDeac"    IsChecked="{Binding Settings.PauseOnDeactivate}"
                    Content="{DynamicResource SETTINGS_PAUSE_ON_DEAC}"/>
-        <Label     Grid.Row="10" Grid.Column="0"   Name="GameTransLabel"    Content="{DynamicResource SETTINGS_GAME_TRANS}"/>
-        <l:UIntDUp Grid.Row="10" Grid.Column="1" x:Name="GameTransUpDown"   Width="40" Value="{Binding Settings.GameTransitionInterval}" HorizontalAlignment="Left"/>
-        <Label     Grid.Row="12" Grid.Column="0"   Name="ScreenSaverLabel"  Content="{DynamicResource SETTINGS_SVR_INTERVAL}"/>
-        <l:UIntDUp Grid.Row="12" Grid.Column="1" x:Name="ScreenSaverUpDown" Width="40" Value="{Binding Settings.ScreenSaverInterval}" HorizontalAlignment="Left"/>
+        <StackPanel Grid.Row="10" Grid.ColumnSpan="2" Orientation="Horizontal">
+            <l:UIntDUp Value="{Binding Settings.GameTransitionInterval}" HorizontalAlignment="Left"  Margin="0 0 5 0"/>
+            <Label     Content="{DynamicResource SETTINGS_GAME_TRANS}"  HorizontalAlignment="Left"/>
+        </StackPanel>
+        <StackPanel Grid.Row="12" Grid.ColumnSpan="2" Orientation="Horizontal">
+            <l:UIntDUp Value="{Binding Settings.ScreenSaverInterval}" HorizontalAlignment="Left"  Margin="0 0 5 0"/>
+            <Label     Content="{DynamicResource SETTINGS_SVR_INTERVAL}"  HorizontalAlignment="Left"/>
+        </StackPanel>
         <Label     Grid.Row="14"                   Name="MonitorLabel"      Content="{DynamicResource SETTINGS_MONITOR}" d:LayoutOverrides="VerticalAlignment"/>
         <ComboBox  Grid.Row="14"  Grid.Column="1"  Name="MonitorCombo"      SelectedIndex="{Binding Settings.ScreenIndex}" Height="20"/>
         <Label     Grid.Row="16"                   Name="PlayStateLabel"    Content="{DynamicResource SETTINGS_PLAY_STATE}" d:LayoutOverrides="VerticalAlignment"/>

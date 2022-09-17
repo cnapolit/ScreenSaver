@@ -25,18 +25,24 @@
             <RowDefinition Height="5"/>
             <RowDefinition/>
         </Grid.RowDefinitions>
-        <CheckBox  Grid.Row="0"   Grid.ColumnSpan="2" Name="CheckDisplayVideo"
-                   IsChecked="{Binding Settings.DisplayVideo}"    Content="{DynamicResource SETTINGS_DISPLAY_VIDEO}"/>
-        <CheckBox  Grid.Row="2"   Grid.ColumnSpan="2" Name="CheckVideoSkip"
-                   IsChecked="{Binding Settings.VideoSkip}"       Content="{DynamicResource SETTINGS_VIDEO_SKIP}"
-                   IsEnabled="{Binding ElementName=CheckDisplayVideo, Path=IsChecked}"/>
-        <CheckBox  Grid.Row="4"   Grid.ColumnSpan="2" Name="CheckMicro"
-                   IsChecked="{Binding Settings.UseMicroTrailer}" Content="{DynamicResource SETTINGS_USE_MICRO}"
-                   IsEnabled="{Binding ElementName=CheckDisplayVideo, Path=IsChecked}"/>
-        <CheckBox  Grid.Row="6"   Grid.ColumnSpan="2" Name="CheckVideoBackup"
-                   IsChecked="{Binding Settings.VideoBackup}"     Content="{DynamicResource SETTINGS_VIDEO_BACKUP}"
-                   IsEnabled="{Binding ElementName=CheckDisplayVideo, Path=IsChecked}"/>
-        <Label     Grid.Row="8"   Grid.Column="0" Name="VideoCornerLabel" Content="{DynamicResource SETTINGS_VIDEO_CORNER}"/>
-        <l:UIntDUp Grid.Row="8"  Grid.Column="1" x:Name="VideoCornerUpDown" Width="40" Value="{Binding Settings.VideoCornerRadius}" HorizontalAlignment="Left"/>
+        <CheckBox Grid.Row="0" Grid.ColumnSpan="2" Name="CheckDisplayVideo"
+                  IsChecked="{Binding Settings.DisplayVideo}"
+                  Content="{DynamicResource SETTINGS_DISPLAY_VIDEO}"/>
+        <CheckBox Grid.Row="2" Grid.ColumnSpan="2" Name="CheckVideoSkip"
+                  IsChecked="{Binding Settings.VideoSkip}"
+                  Content="{DynamicResource SETTINGS_VIDEO_SKIP}"
+                  IsEnabled="{Binding ElementName=CheckDisplayVideo, Path=IsChecked}"/>
+        <CheckBox Grid.Row="4" Grid.ColumnSpan="2" Name="CheckMicro"
+                  IsChecked="{Binding Settings.UseMicroTrailer}"
+                  Content="{DynamicResource SETTINGS_USE_MICRO}"
+                  IsEnabled="{Binding ElementName=CheckDisplayVideo, Path=IsChecked}"/>
+        <CheckBox Grid.Row="6" Grid.ColumnSpan="2" Name="CheckVideoBackup"
+                  IsChecked="{Binding Settings.VideoBackup}"
+                  Content="{DynamicResource SETTINGS_VIDEO_BACKUP}"
+                  IsEnabled="{Binding ElementName=CheckDisplayVideo, Path=IsChecked}"/>
+        <StackPanel Grid.Row="8" Grid.ColumnSpan="2" Orientation="Horizontal">
+            <l:UIntDUp Value="{Binding Settings.VideoCornerRadius}" HorizontalAlignment="Left"  Margin="0 0 5 0"/>
+            <Label     Content="{DynamicResource SETTINGS_VIDEO_CORNER}"  HorizontalAlignment="Left"/>
+        </StackPanel>
     </Grid>
 </UserControl>

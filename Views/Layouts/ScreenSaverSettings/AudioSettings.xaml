@@ -36,6 +36,6 @@
             <Label Name="Percentage"     Content="{Binding Settings.Volume}" />
             <Label Name="PercentageSign" Content="%"/>
         </StackPanel>
-        <Slider Grid.Row="8" Grid.Column="1" Name="VolumeSlider" Maximum="100" Value="{Binding Settings.Volume}" AutoToolTipPlacement="TopLeft" VerticalAlignment="Center"/>
+        <Slider Grid.Row="6" Grid.Column="1" Name="VolumeSlider" Maximum="100" Value="{Binding Settings.Volume}" AutoToolTipPlacement="TopLeft" VerticalAlignment="Center"/>
     </Grid>
 </UserControl>

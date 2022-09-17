@@ -1,14 +1,13 @@
 ﻿using Microsoft.Win32;
 using Playnite.SDK;
 using Playnite.SDK.Models;
-using Sounds;
 using ScreenSaver.Common.Constants;
 using ScreenSaver.Models;
 using ScreenSaver.Models.Enums;
 using ScreenSaver.Services.State.Poll;
 using ScreenSaver.Services.UI.Windows;
 using System;
-using System.Linq;
+using System.Diagnostics;
 using System.Windows;
 
 namespace ScreenSaver.Services.State.ScreenSaver
@@ -17,12 +16,11 @@ namespace ScreenSaver.Services.State.ScreenSaver
     {
         #region Infrastructure
 
-        private readonly IPlayniteAPI           _playniteApi;
-        private readonly IPollManager           _pollManager;
-        private readonly IWindowsManager     _windowsManager;
-        private          ISounds                     _sounds;
-        private          ScreenSaverSettings       _settings;
-        private          int                _activeGameCount;
+        private readonly IPlayniteAPI            _playniteApi;
+        private readonly IPollManager            _pollManager;
+        private readonly IWindowsManager      _windowsManager;
+        private          ScreenSaverSettings        _settings;
+        private          int                 _activeGameCount;
 
         public ScreenSaverManager(IPlayniteAPI playniteApi, IGameGroupManager gameGroupManager, ScreenSaverSettings settings)
         {
@@ -57,9 +55,7 @@ namespace ScreenSaver.Services.State.ScreenSaver
             Application  .Current.Activated               += OnApplicationActivate;
             Application  .Current.MainWindow.StateChanged += OnWindowStateChanged;
 
-            _sounds = _playniteApi.Addons.Plugins.FirstOrDefault(p => p.Id.ToString() is App.Sounds) as ISounds;
-
-            _pollManager.SetupPolling(_sounds);
+            _pollManager.SetupPolling();
 
             if (ShouldPoll())
             {
@@ -127,9 +123,13 @@ namespace ScreenSaver.Services.State.ScreenSaver
         public void Preview(Game game)
         {
             Pause(true, false);
-            _sounds.Pause();
-            _windowsManager.PreviewScreenSaver(game, () => Start(false, false));
-            _sounds.Play();
+            Process.Start(App.SoundsUriPause);
+            _windowsManager.PreviewScreenSaver(game, () =>
+            {
+                Start(false, false);
+                Process.Start(App.SoundsUriPlay);
+
+            });
         }
 
         #endregion

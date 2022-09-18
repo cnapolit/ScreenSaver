@@ -98,7 +98,6 @@
     <Compile Include="Models\GameGroup.cs" />
     <Compile Include="Services\GameGroupManager\GameGroupManager.cs" />
     <Compile Include="Services\GameGroupManager\IGameGroupManager.cs" />
-    <Compile Include="Services\UI\Converters\BoolConverters.cs" />
     <Compile Include="Services\UI\Localization\Localization.cs" />
     <Compile Include="Services\UI\Converters\EnumConverters.cs" />
     <Compile Include="Common\Constants\Resource.cs" />

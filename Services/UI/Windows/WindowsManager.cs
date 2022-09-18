@@ -357,8 +357,17 @@ namespace ScreenSaver.Services.UI.Windows
             content.VideoPlayer.Volume = volume;
             content.MusicPlayer.Volume = volume;
 
+            if (_settings.DisplayLogo)
+            {
+                Grid.SetRow(content.LogoGrid, _settings.DisplayVideo ? 0 : 1);
+                content.LogoImage.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                content.LogoImage.Visibility = Visibility.Hidden;
+            }
+
             content.Video.Visibility = _settings.DisplayVideo ? Visibility.Visible : Visibility.Hidden;
-            content.LogoImage.Visibility = _settings.DisplayLogo ? Visibility.Visible : Visibility.Hidden;
             content.Clock.Visibility = _settings.DisplayClock ? Visibility.Visible : Visibility.Hidden;
 
             window.Content = content;

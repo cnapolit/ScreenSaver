@@ -22,7 +22,7 @@
         <Image Name="BackgroundImage" Source="{Binding BackgroundPath}" Stretch="UniformToFill"
                HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Column="0" Grid.ColumnSpan="3" Grid.RowSpan="2">
         </Image>
-        <Grid Grid.Row="0" Grid.Column="0">
+        <Grid Grid.Row="0" Grid.Column="0" Name="LogoGrid">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="*"/>
@@ -34,7 +34,7 @@
                 </Image.Effect>
             </Image>
         </Grid>
-        <UserControl Name="Clock" Grid.Row="0" Grid.Column="1" Width="auto" Height="auto" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="0 20 20 0" >
+        <UserControl Name="Clock" Grid.Row="0" Grid.Column="1" Width="auto" Height="auto" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="0 20 20 0">
             <Border Width="auto" Height="auto" BorderThickness="1" CornerRadius="{Binding Settings.ClockCornerRadius}">
                 <Border.BorderBrush>
                     <SolidColorBrush Color="#FF2E2E2E" Opacity=".5"/>
@@ -47,19 +47,45 @@
                         <RowDefinition Height="*" />
                         <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
-                    <TextBlock Name="ClockTextBlock" Grid.Row="0" Background="Transparent" TextAlignment="Right" FontFamily="{Binding Settings.ClockFont}" FontSize="{Binding Settings.ClockFontSize}" Foreground="White" Margin="15 15 15 0" Text="{Binding ClockText}" />
-                    <TextBlock Name="DateTextBlock" Grid.Row="1" Background="Transparent" TextAlignment="Right" FontFamily="{Binding Settings.ClockFont}" FontSize="{Binding Settings.ClockSubFontSize}" Foreground="White" Margin="15 0 15 15" Text="{Binding DateText}" />
+                    <TextBlock Name="ClockTextBlock" Grid.Row="0"
+                               Background="Transparent"
+                               TextAlignment="Right" 
+                               FontFamily="{Binding Settings.ClockFont}" 
+                               FontSize="{Binding Settings.ClockFontSize}" 
+                               Foreground="White" 
+                               Margin="15 15 15 0" 
+                               Text="{Binding ClockText}" />
+                    <TextBlock Name="DateTextBlock" Grid.Row="1"
+                               Background="Transparent"
+                               TextAlignment="Right" 
+                               FontFamily="{Binding Settings.ClockFont}"
+                               FontSize="{Binding Settings.ClockSubFontSize}" 
+                               Foreground="White" Margin="15 0 15 15" 
+                               Text="{Binding DateText}" />
                 </Grid>
             </Border>
         </UserControl>
-        <Border Name="Video" BorderBrush="Transparent" CornerRadius="{Binding Settings.VideoCornerRadius}" Grid.Row="1" Grid.Column="0" Width="auto" Height="auto" VerticalAlignment="Bottom" HorizontalAlignment="Left"  Margin="20 0 0 20">
+        <Border Name="Video" Grid.Row="1" Grid.Column="0" 
+                BorderBrush="Transparent"
+                CornerRadius="{Binding Settings.VideoCornerRadius}"
+                Width="auto"
+                Height="auto"
+                VerticalAlignment="Bottom"
+                HorizontalAlignment="Left"
+                Margin="20 0 0 20">
             <Grid>
                 <Border Name="mask" Background="Black" CornerRadius="{Binding ElementName=Video, Path=CornerRadius}"/>
                 <Grid>
                     <Grid.OpacityMask>
                         <VisualBrush Visual="{Binding ElementName=mask}"/>
                     </Grid.OpacityMask>
-                    <MediaElement Name="VideoPlayer" Stretch="Uniform"  Source="{Binding VideoPath}" IsMuted="True" LoadedBehavior="Manual" UnloadedBehavior="Manual" MediaEnded="OnEnd"/>
+                    <MediaElement Name="VideoPlayer" 
+                                  Stretch="Uniform"  
+                                  Source="{Binding VideoPath}"
+                                  IsMuted="True"
+                                  LoadedBehavior="Manual"
+                                  UnloadedBehavior="Manual"
+                                  MediaEnded="OnEnd"/>
                 </Grid>
             </Grid>
         </Border>

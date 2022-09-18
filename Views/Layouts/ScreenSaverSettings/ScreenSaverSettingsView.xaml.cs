@@ -1,8 +1,4 @@
-﻿using ScreenSaver.Common.Constants;
-using System.Collections.Generic;
-using System.Windows.Controls;
-using System.Windows.Forms;
-using Xceed.Wpf.Toolkit;
+﻿using Xceed.Wpf.Toolkit;
 
 namespace ScreenSaver.Views.Layouts.ScreenSaverSettings
 {

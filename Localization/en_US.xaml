@@ -59,9 +59,15 @@
     <sys:String x:Key="MAIN_MENU_SORT">Change Sorting Field</sys:String>
     <sys:String x:Key="MAIN_MENU_ASC">ASC</sys:String>
     <sys:String x:Key="MAIN_MENU_DESC">DESC</sys:String>
-    <sys:String x:Key="MAIN_MENU_TOGGLE">Toggle</sys:String>
+    <sys:String x:Key="MAIN_MENU_TOGGLE">Toggle Active Group Status</sys:String>
     <sys:String x:Key="MAIN_MENU_RENAME">Rename</sys:String>
     <sys:String x:Key="MAIN_MENU_START">Start ScreenSaver</sys:String>
+    <sys:String x:Key="MAIN_MENU_DYNAMIC">Create Dynamic Group</sys:String>
+
+    <sys:String x:Key="MAIN_MENU_LOAD_FILTER">Load Filter</sys:String>
+    <sys:String x:Key="MAIN_MENU_SET_FILTER">Set Filter To Active</sys:String>
+    <sys:String x:Key="MAIN_MENU_VIEW_FILTER">View Filter</sys:String>
+
     <sys:String x:Key="MAIN_MENU_GROUP_NAME">Please enter a name for this group:</sys:String>
     <sys:String x:Key="MAIN_MENU_GROUP_NAME_SHAME">Please enter a non-empty name for this group:</sys:String>
     <sys:String x:Key="MAIN_MENU_GROUP_NAME_CONFLICT">A group of the same name already exists.</sys:String>
@@ -69,6 +75,7 @@
     <sys:String x:Key="MAIN_MENU_GROUP_REMOVE_EMPTY">This group will have no games after this removal. Would you like to delete the group?\nOtherwise, the group will be labelled as inactive.</sys:String>
 
     <sys:String x:Key="GAME_MENU_PREVIEW">Preview ScreenSaver</sys:String>
+    <sys:String x:Key="GAME_MENU_PREVIEW_ERROR">Only one game can be previewed at a time.</sys:String>
     <sys:String x:Key="GAME_MENU_PROMPT_ACTIVE">Should this be the new active group?</sys:String>
     <sys:String x:Key="GAME_MENU_ADD_SELECTED">Add Selected</sys:String>
     <sys:String x:Key="GAME_MENU_REMOVE_SELECTED">Remove Selected</sys:String>

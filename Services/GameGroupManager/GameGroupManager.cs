@@ -163,7 +163,7 @@ namespace ScreenSaver.Services
 
         #endregion
 
-        #region GetCurrentGameGroup
+        #region GetActiveGameGroup
 
         private GameGroup GetCurrentGroup() => _gameGroups.FirstOrDefault(g => g.IsActive);
 
@@ -190,7 +190,7 @@ namespace ScreenSaver.Services
 
         private static bool RemoveGuidsFromGroup(GameGroup group, IEnumerable<Guid> guids)
         {
-            var result = guids.ForAny(group.GameGuids.Remove);
+            var result = group.GameGuids != null && guids.ForAny(group.GameGuids.Remove);
             if (result && group.GameGuids.Count() is 0)
             {
                 group.IsActive = false;

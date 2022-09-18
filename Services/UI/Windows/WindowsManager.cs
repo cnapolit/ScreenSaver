@@ -384,14 +384,10 @@ namespace ScreenSaver.Services.UI.Windows
 
         private GameContent GetNextGameContent()
         {
-            if (!GameEnumerator?.MoveNext() ?? true)
+            if ((!GameEnumerator?.MoveNext() ?? true) && !InitializeEnumerator())
             {
-                // Reset throws NotImplementedException as of 7/5/22
-                if (!InitializeEnumerator())
-                {
-                    logger.Warn("No games found while rendering ScreenSaver");
-                    return null;
-                }
+                logger.Warn("No games found while rendering ScreenSaver");
+                return null;
             }
 
             return GameEnumerator.Current;
@@ -399,29 +395,56 @@ namespace ScreenSaver.Services.UI.Windows
 
         private bool InitializeEnumerator()
         {
-            GameEnumerator = GetGameContentEnumerator();
+            var currentGameGroup = _gameGroupManager.GetActiveGameGroup();
+
+            IEnumerable<Game> games = _playniteApi.Database.Games;
+            if (currentGameGroup != null)
+            {
+                var hasSelectedGames = currentGameGroup.GameGuids.Any();
+
+                if (currentGameGroup.Filter != null)
+                {
+                    var activeFilter = _playniteApi.MainView.GetCurrentFilterSettings();
+
+                    _playniteApi.MainView.ApplyFilterPreset(currentGameGroup.Filter);
+                    var FilteredGames = _playniteApi.MainView.FilteredGames;
+
+                    _playniteApi.MainView.ApplyFilterPreset(new FilterPreset { Settings = activeFilter });
+
+                    if (hasSelectedGames)
+                    {
+                        FilteredGames.AddRange(
+                            GetGuidFilteredGames(_playniteApi.Database.Games, currentGameGroup.GameGuids));
+                    }
+
+                    games = FilteredGames;
+                }
+                else if (hasSelectedGames)
+                {
+                    games = GetGuidFilteredGames(games, currentGameGroup.GameGuids);
+                }
+            }
+
+            var content = games.Select(_gameContentFactory.ConstructGameContent)
+                               .Where(ValidGameContent);
+            if (currentGameGroup.SortField != null && currentGameGroup.SortField != "None")
+            {
+                content = content.OrderBy(
+                    GetSelector(currentGameGroup.SortField), currentGameGroup?.Ascending ?? true);
+            }
+
+            GameEnumerator = content.GetEnumerator();
+
             return GameEnumerator.MoveNext();
         }
 
-        private IEnumerator<GameContent> GetGameContentEnumerator()
-        {
-            var currentGameGroup = _gameGroupManager.GetActiveGameGroup();
-
-            var games = currentGameGroup is null
-                ? _playniteApi.Database.Games
-                : _playniteApi.Database.Games.Where(g => currentGameGroup.GameGuids.Contains(g.Id));
-
-            return games.
-               Select(_gameContentFactory.ConstructGameContent).
-               Where(ValidGameContent).
-               OrderBy(GetSelector(currentGameGroup?.SortField), currentGameGroup?.Ascending ?? true).
-               GetEnumerator();
-        }
+        private IEnumerable<Game> GetGuidFilteredGames(IEnumerable<Game> games, IEnumerable<Guid> guids)
+            => games.Where(g => guids.Contains(g.Id));
 
         private Func<GameContent, object> GetSelector(string propertyName)
         {
             // C# 7.3 does not support conditional expressions here, only C# 9.0+ does
-            if (propertyName == Resource.GROUP_SORT_RND || propertyName is null)
+            if (propertyName == Resource.GROUP_SORT_RND)
             {
                 return _ => _rng.Next();
             }

@@ -107,13 +107,13 @@ namespace ScreenSaver.Services.UI.Menus
             {
                 var groupMenuSection = $"{App.Name}|{GetDisplayName(gameGroup)}";
 
-                _gameMenuItems.Add(new GameMenuItem
+                gameMenuItems.Add(new GameMenuItem
                 {
                     Action = _ => _gameGroupManager.AddGamesToGroup(gameGroup, SelectedGuids),
                     MenuSection = groupMenuSection,
                     Description = Resource.GAME_MENU_ADD_SELECTED
                 });
-                _gameMenuItems.Add(new GameMenuItem
+                gameMenuItems.Add(new GameMenuItem
                 {
                     Action = _ => _gameGroupManager.RemoveGamesFromGroup(gameGroup, SelectedGuids),
                     MenuSection = groupMenuSection,

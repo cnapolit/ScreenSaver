@@ -396,9 +396,10 @@ namespace ScreenSaver.Services.UI.Windows
         private bool InitializeEnumerator()
         {
             var currentGameGroup = _gameGroupManager.GetActiveGameGroup();
+            var gameGroupIsNotNull = currentGameGroup != null;
 
             IEnumerable<Game> games = _playniteApi.Database.Games;
-            if (currentGameGroup != null)
+            if (gameGroupIsNotNull)
             {
                 var hasSelectedGames = currentGameGroup.GameGuids.Any();
 
@@ -425,9 +426,14 @@ namespace ScreenSaver.Services.UI.Windows
                 }
             }
 
+            if (!gameGroupIsNotNull || currentGameGroup.Filter is null)
+            {
+                games = games.Where(g => !g.Hidden);
+            }
+
             var content = games.Select(_gameContentFactory.ConstructGameContent)
                                .Where(ValidGameContent);
-            if (currentGameGroup.SortField != null && currentGameGroup.SortField != "None")
+            if (gameGroupIsNotNull && currentGameGroup.SortField != null && currentGameGroup.SortField != "None")
             {
                 content = content.OrderBy(
                     GetSelector(currentGameGroup.SortField), currentGameGroup?.Ascending ?? true);

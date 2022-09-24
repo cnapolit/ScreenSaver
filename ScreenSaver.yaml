@@ -1,21 +1,3 @@
-AddonId: 'ScreenSaver.CN'
-Packages:
-  - Version: 2.0.0
-    RequiredApiVersion: 6.4.0
-    ReleaseDate: 2022-09-24
-    PackageUrl: https://github.com/cnapolit/ScreenSaver/releases/download/2.0.0/ScreenSaver-2.0.0.pext
-    Changelog:
-      - Requires Playnite 10.x
-      - Added Groups that can be filtered & sorted
-      - Displays a clock while active
-      - Mutes/unmutes Playnite Sounds 5.0 (unreleased)
-      - Media content now loops on end
-      - Can specify a monitor to display to
-      - Filters out hidden games by default
-      - Can toggle to micro trailers
-      - Video corners can now be u
-      - Revealed settings that were unintentionally hidden
-      - Logos now display in the bottom right corner when videos are disabled
   - Version: 1.0.0
     RequiredApiVersion: 6.2.2
     ReleaseDate: 2022-08-31

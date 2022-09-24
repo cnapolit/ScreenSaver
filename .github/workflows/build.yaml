@@ -30,8 +30,8 @@ jobs:
       - name: Setup Playnite
         run: |
           mkdir playnite
-          Invoke-WebRequest -Uri "https://github.com/JosefNemec/Playnite/releases/download/9.19/Playnite919.zip" -OutFile "playnite\Playnite919.zip"
-          Expand-Archive "playnite\playnite919.zip" -DestinationPath "playnite"
+          Invoke-WebRequest -Uri "https://github.com/JosefNemec/Playnite/releases/download/10.2/Playnite102.zip" -OutFile "playnite\Playnite102.zip"
+          Expand-Archive "playnite\playnite102.zip" -DestinationPath "playnite"
       
       - name: Package release
         run: |

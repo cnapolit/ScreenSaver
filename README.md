@@ -20,16 +20,20 @@ This extension took inspiration in design & implementation from both Playnite So
 ## Updates
 ### 2.0.0
 #### New Features
+* Requires Playnite 10.x
 * Added Groups to Sounds
   - Display particular groups of games
   - Sort by particular fields
   - Static Vs. Dynamic: Specify a list of games or filter via the main view
-    - Whitelist: dynamic groups will always include listed games, regardless of filter
+    - Whitelist: dynamic groups will always include added games, regardless of filter
     - Sort: overrides filter sort when specified
-* Will now mute/unmute Playnite Sounds
+* Will now mute/unmute Playnite Sounds 5.0
 * Media content now loops on end
 * Can specify a specific monitor to display to
 * Displays a clock while active
+* Filters out hidden games by default
+* Revealed settings that were unintentionally hidden
+* Logos will now display in the bottom right corner when videos are disabled
 #### Bugfixes
 * ScreenSaver no longer plays during gameplay when it shouldn't
 ## Integrated Extensions

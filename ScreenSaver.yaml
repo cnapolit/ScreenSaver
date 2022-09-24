@@ -13,6 +13,7 @@ Packages:
       - Can specify a monitor to display to
       - Filters out hidden games by default
       - Can toggle to micro trailers
+      - Video corners can now be u
       - Revealed settings that were unintentionally hidden
       - Logos now display in the bottom right corner when videos are disabled
   - Version: 1.0.0

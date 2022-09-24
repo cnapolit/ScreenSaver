@@ -21,7 +21,7 @@ This extension took inspiration in design & implementation from both Playnite So
 ### 2.0.0
 #### New Features
 * Requires Playnite 10.x
-* Added Groups to Sounds
+* Added Groups to ScreenSaver
   - Display particular groups of games
   - Sort by particular fields
   - Static Vs. Dynamic: Specify a list of games or filter via the main view

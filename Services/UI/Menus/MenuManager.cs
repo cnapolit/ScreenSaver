@@ -346,11 +346,11 @@ namespace ScreenSaver.Services.UI.Menus
 
             var gameGroup = new GameGroup
             {
+                Name = name,
                 SortField = sortingField,
                 Ascending = ascending,
                 Filter = new FilterPreset
                 {
-                    Name = name,
                     Settings = _playniteAPI.MainView.GetCurrentFilterSettings()
                 }
             };

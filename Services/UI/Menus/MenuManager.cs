@@ -410,11 +410,14 @@ namespace ScreenSaver.Services.UI.Menus
             var groupName = result.SelectedString;
             while (string.IsNullOrWhiteSpace(groupName))
             {
-                groupName = _playniteAPI.Dialogs.SelectString(Resource.MAIN_MENU_GROUP_NAME_SHAME, App.Name, suggestedName).SelectedString;
-                if (!result.Result)
+                var groupResult = _playniteAPI.Dialogs.SelectString(
+                    Resource.MAIN_MENU_GROUP_NAME_SHAME, App.Name, suggestedName);
+                if (!groupResult.Result)
                 {
                     return null;
                 }
+                
+                groupName = groupResult.SelectedString;
             }
             return groupName;
         }

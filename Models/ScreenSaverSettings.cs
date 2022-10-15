@@ -1,4 +1,5 @@
-﻿using ScreenSaver.Models.Enums;
+﻿using Playnite.SDK.Data;
+using ScreenSaver.Models.Enums;
 using System;
 using System.Collections.Generic;
 using System.Windows.Forms;
@@ -31,6 +32,12 @@ namespace ScreenSaver.Models
         public PlayState PlayState { get; set; } = PlayState.FullScreen;
 
         private string _monitorName = Screen.PrimaryScreen.DeviceName;
+
+        // For Serialization, as an attempt to 'remember' the desired monitor, even on disconnect
+        public string MonitorName => _monitorName;
+
+        // For Access & Mutation
+        [DontSerialize]
         public uint ScreenIndex 
         { 
             get
@@ -43,7 +50,13 @@ namespace ScreenSaver.Models
 
                 return index < 0 ? 0 : (uint)index;
             }
-            set => _monitorName = Screen.AllScreens[value].DeviceName;
+            set
+            {
+                if (value < Screen.AllScreens.Length)
+                {
+                    _monitorName = Screen.AllScreens[value].DeviceName;
+                }
+            }
         }
     }
 }

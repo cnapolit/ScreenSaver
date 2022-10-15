@@ -23,33 +23,33 @@ namespace ScreenSaver.Services.UI.Windows
 
         #region Variables
 
-        private static readonly ILogger                                   logger =                LogManager.GetLogger();
-        private static readonly Random                                      _rng = new                          Random();
-        private static readonly object                           screenSaverLock = new                          object();
-        private static readonly Duration                                duration = new Duration(TimeSpan.FromSeconds(1));
+        private static readonly ILogger logger = LogManager.GetLogger();
+        private static readonly Random _rng = new Random();
+        private static readonly object screenSaverLock = new object();
+        private static readonly Duration duration = new Duration(TimeSpan.FromSeconds(1));
 
-        private        readonly IPlayniteAPI                        _playniteApi;
-        private        readonly IGameContentFactory          _gameContentFactory;
-        private        readonly IGameGroupManager              _gameGroupManager;
-        private        readonly Action                           _onStopCallBack;
+        private readonly IPlayniteAPI _playniteApi;
+        private readonly IGameContentFactory _gameContentFactory;
+        private readonly IGameGroupManager _gameGroupManager;
+        private readonly Action _onStopCallBack;
 
-        private                 bool                             showFirstWindow;
+        private bool showFirstWindow;
 
-        private                 ScreenSaverSettings                    _settings;
-        private                 Window                    firstScreenSaverWindow;
-        private                 Window                   secondScreenSaverWindow;
-        private                 Window                         blackgroundWindow;
+        private ScreenSaverSettings _settings;
+        private Window firstScreenSaverWindow;
+        private Window secondScreenSaverWindow;
+        private Window blackgroundWindow;
 
-        private                 IEnumerator<GameContent>          GameEnumerator;
+        private IEnumerator<GameContent> GameEnumerator;
 
         #endregion
 
         public WindowsManager(IPlayniteAPI playniteApi, IGameGroupManager gameGroupManager, ScreenSaverSettings settings, Action onStopCallBack)
         {
-            _settings           =         settings;
-            _playniteApi        =      playniteApi;
-            _onStopCallBack     =   onStopCallBack;
-            _gameGroupManager   = gameGroupManager;
+            _settings = settings;
+            _playniteApi = playniteApi;
+            _onStopCallBack = onStopCallBack;
+            _gameGroupManager = gameGroupManager;
             _gameContentFactory = new GameContentFactory(playniteApi, settings);
         }
 
@@ -57,12 +57,12 @@ namespace ScreenSaver.Services.UI.Windows
 
         #region Interface
 
-        public void StartScreenSaver      (                                            ) => Start      (                   );
-        public void StopScreenSaver       (                                            ) => Stop       (                   );
-        public void UpdateScreenSaver     (                                            ) => Update     (                   );
-        public void UpdateScreenSaverTime (                                            ) => UpdateTime (                   );
-        public void PreviewScreenSaver    (Game game, Action              closeCallBack) => Preview    (game, closeCallBack);
-        public void UpdateSettings        (           ScreenSaverSettings      settings) => UpdateSetting(settings);
+        public void StartScreenSaver() => Start();
+        public void StopScreenSaver() => Stop();
+        public void UpdateScreenSaver() => Update();
+        public void UpdateScreenSaverTime() => UpdateTime();
+        public void PreviewScreenSaver(Game game, Action closeCallBack) => Preview(game, closeCallBack);
+        public void UpdateSettings(ScreenSaverSettings settings) => UpdateSetting(settings);
 
         #endregion
 
@@ -84,32 +84,36 @@ namespace ScreenSaver.Services.UI.Windows
             secondScreenSaverWindow?.Close();
             MuteBackgroundMusic();
 
-            var screen =  Screen.AllScreens[_settings.ScreenIndex];
+            var ratio = CalculateScreenRatio();
+            var screen = Screen.AllScreens[_settings.ScreenIndex];
+            logger.Info($"Displaying ScreenSaver to screen '{screen.DeviceName}' with dimensions {screen.WorkingArea.Width}X{screen.WorkingArea.Height}, top position '{screen.WorkingArea.Top}', and left position '{screen.WorkingArea.Left}'");
+
             blackgroundWindow = new Window
             {
                 Background = Brushes.Black,
                 WindowStyle = WindowStyle.None,
                 ResizeMode = ResizeMode.NoResize,
-                WindowState = WindowState.Maximized,
                 Focusable = false,
                 AllowsTransparency = true,
                 Opacity = 0,
                 Topmost = true,
-                Top = screen.Bounds.Top,
-                Left = screen.Bounds.Left
+                Top = screen.WorkingArea.Top / ratio,
+                Left = screen.WorkingArea.Left / ratio
             };
-            blackgroundWindow.Show();
 
-            secondScreenSaverWindow = CreateScreenSaverLayerWindow(null, screen);
-            firstScreenSaverWindow  = CreateScreenSaverLayerWindow(gameContent, screen);
+            blackgroundWindow.Show();
+            blackgroundWindow.WindowState = WindowState.Maximized;
+
+            secondScreenSaverWindow = CreateScreenSaverLayerWindow(null, screen, ratio);
+            firstScreenSaverWindow = CreateScreenSaverLayerWindow(gameContent, screen, ratio);
 
             var newContent = firstScreenSaverWindow.Content as ScreenSaverImage;
             var volume = _settings.Volume / 100.0;
 
-            var fadeInBlack  = CreateFade(blackgroundWindow,         UIElement. OpacityProperty, duration, 0,      1);
-            var fadeInWindow = CreateFade(firstScreenSaverWindow,    UIElement. OpacityProperty, duration, 0,      1);
-            var fadeInVideo  = CreateFade(newContent.VideoPlayer, MediaElement. VolumeProperty,  duration, 0, volume);
-            var fadeInMusic  = CreateFade(newContent.MusicPlayer, MediaElement. VolumeProperty,  duration, 0, volume);
+            var fadeInBlack = CreateFade(blackgroundWindow, UIElement.OpacityProperty, duration, 0, 1);
+            var fadeInWindow = CreateFade(firstScreenSaverWindow, UIElement.OpacityProperty, duration, 0, 1);
+            var fadeInVideo = CreateFade(newContent.VideoPlayer, MediaElement.VolumeProperty, duration, 0, volume);
+            var fadeInMusic = CreateFade(newContent.MusicPlayer, MediaElement.VolumeProperty, duration, 0, volume);
 
             var storyBoard = new Storyboard
             {
@@ -243,12 +247,12 @@ namespace ScreenSaver.Services.UI.Windows
             var volume = _settings.Volume / 100.0;
             var oldContent = oldWindow.Content as ScreenSaverImage;
 
-            var fadeInWindow  = CreateFade(newWindow,                 UIElement. OpacityProperty, duration, 0,      1);
-            var fadeOutWindow = CreateFade(oldWindow,                 UIElement. OpacityProperty, duration, 1,      0);
-            var fadeInVideo   = CreateFade(newContent.VideoPlayer, MediaElement.  VolumeProperty, duration, 0, volume);
-            var fadeOutVideo  = CreateFade(oldContent.VideoPlayer, MediaElement.  VolumeProperty, duration, volume, 0);
-            var fadeInMusic   = CreateFade(newContent.MusicPlayer, MediaElement.  VolumeProperty, duration, 0, volume);
-            var fadeoutMusic  = CreateFade(oldContent.MusicPlayer, MediaElement.  VolumeProperty, duration, volume, 0);
+            var fadeInWindow = CreateFade(newWindow, UIElement.OpacityProperty, duration, 0, 1);
+            var fadeOutWindow = CreateFade(oldWindow, UIElement.OpacityProperty, duration, 1, 0);
+            var fadeInVideo = CreateFade(newContent.VideoPlayer, MediaElement.VolumeProperty, duration, 0, volume);
+            var fadeOutVideo = CreateFade(oldContent.VideoPlayer, MediaElement.VolumeProperty, duration, volume, 0);
+            var fadeInMusic = CreateFade(newContent.MusicPlayer, MediaElement.VolumeProperty, duration, 0, volume);
+            var fadeoutMusic = CreateFade(oldContent.MusicPlayer, MediaElement.VolumeProperty, duration, volume, 0);
 
             var storyBoard = new Storyboard
             {
@@ -279,7 +283,7 @@ namespace ScreenSaver.Services.UI.Windows
         {
             var screen = Screen.AllScreens[_settings.ScreenIndex];
             var gameContent = _gameContentFactory.ConstructGameContent(game);
-            firstScreenSaverWindow = CreateScreenSaverLayerWindow(gameContent, screen);
+            firstScreenSaverWindow = CreateScreenSaverLayerWindow(gameContent, screen, CalculateScreenRatio());
             firstScreenSaverWindow.Closed += (_, __) => onCloseCallBack();
             firstScreenSaverWindow.Opacity = 1;
             PlayMedia(firstScreenSaverWindow.Content, gameContent);
@@ -320,21 +324,19 @@ namespace ScreenSaver.Services.UI.Windows
 
         #region Helpers
 
-        private Window CreateScreenSaverLayerWindow(GameContent gameContent, Screen screen)
+        private Window CreateScreenSaverLayerWindow(GameContent gameContent, Screen screen, double ratio)
         {
             var window = new Window
             {
                 WindowStyle = WindowStyle.None,
                 ResizeMode = ResizeMode.NoResize,
-                WindowState = WindowState.Maximized,
                 Focusable = true,
-                // Window is set to topmost to make sure another window won't show over it
                 Topmost = true,
                 AllowsTransparency = true,
                 Opacity = 0,
                 Background = Brushes.Transparent,
-                Top = screen.Bounds.Top,
-                Left = screen.Bounds.Left
+                Top = screen.WorkingArea.Top / ratio,
+                Left = screen.WorkingArea.Left / ratio
             };
 
             var time = DateTime.Now;
@@ -374,9 +376,24 @@ namespace ScreenSaver.Services.UI.Windows
             window.Closed += ScreenSaverClosed;
 
             window.Show();
+            window.WindowState = WindowState.Maximized;
             window.Focus();
 
             return window;
+        }
+
+        private static double CalculateScreenRatio()
+        { 
+            var widthRatio = Screen.PrimaryScreen.WorkingArea.Width / SystemParameters.PrimaryScreenWidth;
+            var heightRatio = Screen.PrimaryScreen.WorkingArea.Height / SystemParameters.PrimaryScreenHeight;
+            if (widthRatio > heightRatio)
+            {
+                logger.Info($"Using widthRatio '{widthRatio}' with workingArea width of '{Screen.PrimaryScreen.WorkingArea.Width}' and primary screen width of '{SystemParameters.PrimaryScreenWidth}'");
+                return widthRatio;
+            }
+
+            logger.Info($"Using heightRatio '{heightRatio}' with workingArea Height of '{Screen.PrimaryScreen.WorkingArea.Height}' and primary screen Height of '{SystemParameters.PrimaryScreenHeight}'");
+            return heightRatio;
         }
 
         string CreateClockText(DateTime time) => time.ToString("t");

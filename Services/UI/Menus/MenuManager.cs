@@ -183,15 +183,11 @@ namespace ScreenSaver.Services.UI.Menus
         };
 
         private string PromptForSortingField()
-        {
-            var result = _playniteAPI.Dialogs.ChooseItemWithSearch(
-                SortableFields, 
-                s => SortableFields.OrderBy(f => f.Name.StartsWith(s)).ToList(), 
+            => _playniteAPI.Dialogs.ChooseItemWithSearch(
+                SortableFields,
+                s => SortableFields.OrderBy(f => f.Name.StartsWith(s)).ToList(),
                 string.Empty,
-                Resource.MENU_PROMPT_SORT);
-
-            return result?.Name;
-        }
+                Resource.MENU_PROMPT_SORT)?.Name;
 
         #endregion
 

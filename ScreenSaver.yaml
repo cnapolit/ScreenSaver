@@ -1,13 +1,15 @@
 AddonId: 'ScreenSaver.CN'
 Packages:
-  - Version: 2.0.3
+  - Version: 2.0.5
     RequiredApiVersion: 6.4.0
-    ReleaseDate: 2022-10-15
-    PackageUrl: https://github.com/cnapolit/ScreenSaver/releases/download/2.0.3/ScreenSaver-2.0.3.pext
+    ReleaseDate: 2022-10-31
+    PackageUrl: https://github.com/cnapolit/ScreenSaver/releases/download/2.0.5/ScreenSaver-2.0.5.pext
     Changelog:
       - Fixed ScreenSaver not displaying to secondary monitors
       - ScreenSaver no long crashes when loading settings for a monitor when the monitor count decreased
       - Group naming no longer re-opens when closing after initial empty name
+      - Default sorting is random again when displaying with no active group
+      - Added Spanish localization by Discord user Madcore#2608
   - Version: 2.0.0
     RequiredApiVersion: 6.4.0
     ReleaseDate: 2022-09-24

@@ -412,11 +412,11 @@ namespace ScreenSaver.Services.UI.Windows
 
         private bool InitializeEnumerator()
         {
-            var currentGameGroup = _gameGroupManager.GetActiveGameGroup();
-            var gameGroupIsNotNull = currentGameGroup != null;
 
             IEnumerable<Game> games = _playniteApi.Database.Games;
-            if (gameGroupIsNotNull)
+
+            var currentGameGroup = _gameGroupManager.GetActiveGameGroup();
+            if (currentGameGroup != null)
             {
                 var hasSelectedGames = currentGameGroup.GameGuids.Any();
 
@@ -443,17 +443,22 @@ namespace ScreenSaver.Services.UI.Windows
                 }
             }
 
-            if (!gameGroupIsNotNull || currentGameGroup.Filter is null)
+            if (currentGameGroup?.Filter is null)
             {
                 games = games.Where(g => !g.Hidden);
             }
 
             var content = games.Select(_gameContentFactory.ConstructGameContent)
                                .Where(ValidGameContent);
-            if (gameGroupIsNotNull && currentGameGroup.SortField != null && currentGameGroup.SortField != "None")
+
+            var sortField = string.IsNullOrWhiteSpace(currentGameGroup?.SortField)  
+                ? Resource.GROUP_SORT_RND 
+                : currentGameGroup.SortField;
+
+            if (sortField != "None")
             {
                 content = content.OrderBy(
-                    GetSelector(currentGameGroup.SortField), currentGameGroup?.Ascending ?? true);
+                    GetSelector(sortField), currentGameGroup?.Ascending ?? true);
             }
 
             GameEnumerator = content.GetEnumerator();
@@ -467,7 +472,7 @@ namespace ScreenSaver.Services.UI.Windows
         private Func<GameContent, object> GetSelector(string propertyName)
         {
             // C# 7.3 does not support conditional expressions here, only C# 9.0+ does
-            if (propertyName == Resource.GROUP_SORT_RND)
+            if (propertyName == "Random")
             {
                 return _ => _rng.Next();
             }

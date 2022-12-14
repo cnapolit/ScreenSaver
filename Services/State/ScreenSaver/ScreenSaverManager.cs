@@ -2,12 +2,14 @@
 using Playnite.SDK;
 using Playnite.SDK.Models;
 using ScreenSaver.Common.Constants;
+using ScreenSaver.Common.Imports;
 using ScreenSaver.Models;
 using ScreenSaver.Models.Enums;
 using ScreenSaver.Services.State.Poll;
 using ScreenSaver.Services.UI.Windows;
 using System;
 using System.Diagnostics;
+using System.Linq;
 using System.Windows;
 
 namespace ScreenSaver.Services.State.ScreenSaver
@@ -16,11 +18,11 @@ namespace ScreenSaver.Services.State.ScreenSaver
     {
         #region Infrastructure
 
-        private readonly IPlayniteAPI            _playniteApi;
-        private readonly IPollManager            _pollManager;
-        private readonly IWindowsManager      _windowsManager;
-        private          ScreenSaverSettings        _settings;
-        private          int                 _activeGameCount;
+        private readonly IPlayniteAPI               _playniteApi;
+        private readonly IPollManager               _pollManager;
+        private readonly IWindowsManager         _windowsManager;
+        private          ScreenSaverSettings           _settings;
+        private          int                    _activeGameCount;
 
         public ScreenSaverManager(IPlayniteAPI playniteApi, IGameGroupManager gameGroupManager, ScreenSaverSettings settings)
         {
@@ -141,10 +143,9 @@ namespace ScreenSaver.Services.State.ScreenSaver
             _windowsManager .UpdateSettings(settings);
             _pollManager    .UpdateSettings(settings);
 
-            // Re-evaluate current poll state
-            UpdatePollState();
-
             _settings = settings;
+
+            UpdatePollState();
         }
 
         #endregion
@@ -164,9 +165,22 @@ namespace ScreenSaver.Services.State.ScreenSaver
             var playOnBoth       = _settings.PlayState is PlayState.Always;
             var playOnFullScreen = _settings.PlayState is PlayState.FullScreen && !desktopMode;
             var playOnDesktop    = _settings.PlayState is PlayState.Desktop    &&  desktopMode;
-            var stopDuringGame   = _settings.DisableWhilePlaying  && _activeGameCount > 0;
 
-            return (playOnBoth || playOnFullScreen || playOnDesktop) && !stopDuringGame;
+            var stopDuringGame   = _settings.DisableWhilePlaying  && _activeGameCount > 0;
+            var isTop            = !_settings.PauseOnDeactivate || PlayniteIsInForeground();
+
+
+            return (playOnBoth || playOnFullScreen || playOnDesktop) && !stopDuringGame && isTop;
+        }
+
+        private static bool PlayniteIsInForeground()
+        {
+            var foregroundHandle = User32.GetForegroundWindow();
+
+            return Process.
+                GetProcesses().
+                Where(p => p.ProcessName.Contains("Playnite")).
+                Any(p => p.MainWindowHandle == foregroundHandle);
         }
 
         #region State Changes
@@ -183,7 +197,7 @@ namespace ScreenSaver.Services.State.ScreenSaver
 
         private void OnApplicationDeactivate(object sender, EventArgs e)
         {
-            if (_settings.PauseOnDeactivate) _pollManager.PausePolling();
+            if (_settings.PauseOnDeactivate) Pause(true, false);
         }
 
         private void OnApplicationActivate(object sender, EventArgs e)

@@ -330,7 +330,7 @@ namespace ScreenSaver.Services.UI.Windows
             {
                 WindowStyle = WindowStyle.None,
                 ResizeMode = ResizeMode.NoResize,
-                Focusable = true,
+                Focusable = false,
                 Topmost = true,
                 AllowsTransparency = true,
                 Opacity = 0,

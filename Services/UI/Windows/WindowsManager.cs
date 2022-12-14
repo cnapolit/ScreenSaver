@@ -415,32 +415,43 @@ namespace ScreenSaver.Services.UI.Windows
 
             IEnumerable<Game> games = _playniteApi.Database.Games;
 
+            var hasSelectedGames = false;
             var currentGameGroup = _gameGroupManager.GetActiveGameGroup();
             if (currentGameGroup != null)
             {
-                var hasSelectedGames = currentGameGroup.GameGuids.Any();
-
+                List<Game> groupGames = null;            
+                
                 if (currentGameGroup.Filter != null)
                 {
-                    var activeFilter = _playniteApi.MainView.GetCurrentFilterSettings();
-
-                    _playniteApi.MainView.ApplyFilterPreset(currentGameGroup.Filter);
-                    var FilteredGames = _playniteApi.MainView.FilteredGames;
-
-                    _playniteApi.MainView.ApplyFilterPreset(new FilterPreset { Settings = activeFilter });
-
-                    if (hasSelectedGames)
-                    {
-                        FilteredGames.AddRange(
-                            GetGuidFilteredGames(_playniteApi.Database.Games, currentGameGroup.GameGuids));
-                    }
-
-                    games = FilteredGames;
+                    groupGames = _settings.RetrieveDynamicGroupsInOrder
+                        ? GetSortedDynamicList(currentGameGroup.Filter.Id)
+                        : _playniteApi.Database.GetFilteredGames(currentGameGroup.Filter.Settings).ToList();
                 }
-                else if (hasSelectedGames)
+
+                if (currentGameGroup.GameGuids.Any())
                 {
-                    games = GetGuidFilteredGames(games, currentGameGroup.GameGuids);
+                    var selectedGames = currentGameGroup.GameGuids.
+                        Select(guid => _playniteApi.Database.Games.FirstOrDefault(g => g.Id == guid)).
+                        Where(g => g != null);
+
+                    hasSelectedGames = selectedGames.Any();
+                    if (hasSelectedGames) /* Then */
+                    if (groupGames is null)
+                    {
+                        groupGames = selectedGames.ToList();
+                    }
+                    else
+                    {
+                        groupGames.AddRange(selectedGames);
+                    }
                 }
+
+                if (groupGames is null)
+                {
+                    return false;
+                }
+
+                games = groupGames;
             }
 
             if (currentGameGroup?.Filter is null)
@@ -448,8 +459,8 @@ namespace ScreenSaver.Services.UI.Windows
                 games = games.Where(g => !g.Hidden);
             }
 
-            var content = games.Select(_gameContentFactory.ConstructGameContent)
-                               .Where(ValidGameContent);
+            var content = games.Select(_gameContentFactory.ConstructGameContent).
+                                Where(ValidGameContent);
 
             var sortField = string.IsNullOrWhiteSpace(currentGameGroup?.SortField)  
                 ? Resource.GROUP_SORT_RND 
@@ -457,8 +468,14 @@ namespace ScreenSaver.Services.UI.Windows
 
             if (sortField != "None")
             {
-                content = content.OrderBy(
-                    GetSelector(sortField), currentGameGroup?.Ascending ?? true);
+                content = content.OrderBy(GetSelector(sortField), currentGameGroup?.Ascending ?? true);
+            }
+            else if (hasSelectedGames && currentGameGroup?.Filter?.SortingOrder != null)
+            {
+                // TODO: match sort of filter for selected games
+                // If there is no sort override, a filter with a sorting order is present and the game group has selected games,
+                // then the games must be re-ordered using the filter order
+                logger.Warn("Selected and filtered games are in use, but the sort field is not specified. Selected games will be appended.");
             }
 
             GameEnumerator = content.GetEnumerator();
@@ -466,8 +483,19 @@ namespace ScreenSaver.Services.UI.Windows
             return GameEnumerator.MoveNext();
         }
 
-        private IEnumerable<Game> GetGuidFilteredGames(IEnumerable<Game> games, IEnumerable<Guid> guids)
-            => games.Where(g => guids.Contains(g.Id));
+        private List<Game> GetSortedDynamicList(Guid filterId)
+        {
+            var activeFilter = _playniteApi.MainView.GetCurrentFilterSettings();
+            var selectedGames = _playniteApi.MainView.SelectedGames.Select(g => g.Id).ToList();
+
+            _playniteApi.MainView.ApplyFilterPreset(filterId);
+            var filteredGames = _playniteApi.MainView.FilteredGames;
+
+            _playniteApi.MainView.ApplyFilterPreset(new FilterPreset { Settings = activeFilter });
+            _playniteApi.MainView.SelectGames(selectedGames);
+
+            return filteredGames;
+        }
 
         private Func<GameContent, object> GetSelector(string propertyName)
         {

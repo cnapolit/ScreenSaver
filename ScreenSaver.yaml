@@ -1,5 +1,11 @@
 AddonId: 'ScreenSaver.CN'
 Packages:
+  - Version: 2.1.5
+    RequiredApiVersion: 6.6.0
+    ReleaseDate: 2022-11-09
+    PackageUrl: https://github.com/cnapolit/ScreenSaver/releases/download/2.1.5/ScreenSaver-2.1.5.pext
+    Changelog:
+      - Uses new API method to retrieve filtered games without modifying the main view
   - Version: 2.0.5
     RequiredApiVersion: 6.4.0
     ReleaseDate: 2022-10-31

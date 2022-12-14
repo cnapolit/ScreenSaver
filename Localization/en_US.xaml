@@ -45,6 +45,8 @@
     <sys:String x:Key="SETTINGS_DISPLAY_CLOCK">Display Clock</sys:String>
     <sys:String x:Key="SETTINGS_DISPLAY_VIDEO">Display Video</sys:String>
     <sys:String x:Key="SETTINGS_DISPLAY_LOGO">Display Logo</sys:String>
+    <sys:String x:Key="SETTINGS_DYNAMIC_SORT">Retrieve Dynmaic Groups in Order</sys:String>
+    <sys:String x:Key="SETTINGS_DYNAMIC_SORT_TIP">Enabling has the downside of briefly altering the main view UI</sys:String>
 
     <!-- Settings Resources -->
 
@@ -52,6 +54,7 @@
 
     <sys:String x:Key="MENU_GROUPS">Groups</sys:String>
     <sys:String x:Key="MENU_PREVIEW">Preview</sys:String>
+    <sys:String x:Key="MENU_VIEW">View</sys:String>
     <sys:String x:Key="MENU_DELETE">Delete</sys:String>
     <sys:String x:Key="MENU_PROMPT_SORT">Please select a field to sort by:</sys:String>
     <sys:String x:Key="MENU_PROMPT_ASC">Should the group be sorted in ascending order?</sys:String>
@@ -73,7 +76,7 @@
     <sys:String x:Key="MAIN_MENU_GROUP_NAME_CONFLICT">A group of the same name already exists.</sys:String>
     <sys:String x:Key="MAIN_MENU_PROMPT_DELETE">Are you sure you want to delete group '{0}'? This action cannot be undone.</sys:String>
     <sys:String x:Key="MAIN_MENU_GROUP_REMOVE_EMPTY">This group will have no games after this removal. Would you like to delete the group?\nOtherwise, the group will be labelled as inactive.</sys:String>
-
+    <sys:String x:Key="MAIN_MENU_SELECTED_GAMES">Selected Games</sys:String>
     <sys:String x:Key="GAME_MENU_PREVIEW">Preview ScreenSaver</sys:String>
     <sys:String x:Key="GAME_MENU_PREVIEW_ERROR">Only one game can be previewed at a time.</sys:String>
     <sys:String x:Key="GAME_MENU_PROMPT_ACTIVE">Should this be the new active group?</sys:String>

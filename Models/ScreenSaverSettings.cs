@@ -28,6 +28,7 @@ namespace ScreenSaver.Models
         public bool DisplayLogo { get; set; } = true;
         public bool DisableWhilePlaying { get; set; } = true;
         public bool PauseOnDeactivate { get; set; } = true;
+        public bool RetrieveDynamicGroupsInOrder { get; set; } = false;
         public AudioSource AudioSource { get; set; } = AudioSource.Music;
         public PlayState PlayState { get; set; } = PlayState.FullScreen;
 

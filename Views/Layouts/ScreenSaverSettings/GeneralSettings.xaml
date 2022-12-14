@@ -31,6 +31,8 @@
             <RowDefinition/>
             <RowDefinition Height="5"/>
             <RowDefinition/>
+            <RowDefinition Height="5"/>
+            <RowDefinition/>
         </Grid.RowDefinitions>
         <CheckBox  Grid.Row="0" Grid.ColumnSpan="2" Name="CheckDisplayLogo"    IsChecked="{Binding Settings.DisplayLogo}"
                    Content="{DynamicResource SETTINGS_DISPLAY_LOGO}"/>
@@ -42,18 +44,20 @@
                    Content="{DynamicResource SETTINGS_DISABLE_WHILE_PLAY}"/>
         <CheckBox  Grid.Row="8" Grid.ColumnSpan="2" Name="CheckPauseOnDeac"    IsChecked="{Binding Settings.PauseOnDeactivate}"
                    Content="{DynamicResource SETTINGS_PAUSE_ON_DEAC}"/>
-        <StackPanel Grid.Row="10" Grid.ColumnSpan="2" Orientation="Horizontal">
+        <CheckBox  Grid.Row="10" Grid.ColumnSpan="2" Name="CheckDynGrpsInOr"    IsChecked="{Binding Settings.RetrieveDynamicGroupsInOrder}"
+                   Content="{DynamicResource SETTINGS_DYNAMIC_SORT}" ToolTip="{DynamicResource SETTINGS_DYNAMIC_SORT_TIP}"/>
+        <StackPanel Grid.Row="12" Grid.ColumnSpan="2" Orientation="Horizontal">
             <l:UIntDUp Value="{Binding Settings.GameTransitionInterval}" HorizontalAlignment="Left"  Margin="0 0 5 0"/>
             <Label     Content="{DynamicResource SETTINGS_GAME_TRANS}"  HorizontalAlignment="Left"/>
         </StackPanel>
-        <StackPanel Grid.Row="12" Grid.ColumnSpan="2" Orientation="Horizontal">
+        <StackPanel Grid.Row="14" Grid.ColumnSpan="2" Orientation="Horizontal">
             <l:UIntDUp Value="{Binding Settings.ScreenSaverInterval}" HorizontalAlignment="Left"  Margin="0 0 5 0"/>
             <Label     Content="{DynamicResource SETTINGS_SVR_INTERVAL}"  HorizontalAlignment="Left"/>
         </StackPanel>
-        <Label     Grid.Row="14"                   Name="MonitorLabel"      Content="{DynamicResource SETTINGS_MONITOR}" d:LayoutOverrides="VerticalAlignment"/>
-        <ComboBox  Grid.Row="14"  Grid.Column="1"  Name="MonitorCombo"      SelectedIndex="{Binding Settings.ScreenIndex}" Height="20"/>
-        <Label     Grid.Row="16"                   Name="PlayStateLabel"    Content="{DynamicResource SETTINGS_PLAY_STATE}" d:LayoutOverrides="VerticalAlignment"/>
-        <ComboBox  Grid.Row="16"  Grid.Column="1"  Name="PlayStateCombo"    SelectedIndex="{Binding Settings.PlayState, Converter={c:PlayStateConverter}}" Height="20">
+        <Label     Grid.Row="16"                   Name="MonitorLabel"      Content="{DynamicResource SETTINGS_MONITOR}" d:LayoutOverrides="VerticalAlignment"/>
+        <ComboBox  Grid.Row="16"  Grid.Column="1"  Name="MonitorCombo"      SelectedIndex="{Binding Settings.ScreenIndex}" Height="20"/>
+        <Label     Grid.Row="18"                   Name="PlayStateLabel"    Content="{DynamicResource SETTINGS_PLAY_STATE}" d:LayoutOverrides="VerticalAlignment"/>
+        <ComboBox  Grid.Row="18"  Grid.Column="1"  Name="PlayStateCombo"    SelectedIndex="{Binding Settings.PlayState, Converter={c:PlayStateConverter}}" Height="20">
             <ComboBoxItem Content="{DynamicResource SETTINGS_ENUM_PLAY_STATE_NEVER}"/>
             <ComboBoxItem Content="{DynamicResource SETTINGS_ENUM_PLAY_STATE_DESKTOP}"/>
             <ComboBoxItem Content="{DynamicResource SETTINGS_ENUM_PLAY_STATE_FULLSCREEN}"/>

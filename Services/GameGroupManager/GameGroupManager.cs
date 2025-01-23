@@ -1,5 +1,4 @@
-﻿using Newtonsoft.Json;
-using Playnite.SDK;
+﻿using Playnite.SDK;
 using ScreenSaver.Common.Constants;
 using ScreenSaver.Common.Extensions;
 using ScreenSaver.Models;
@@ -7,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
+using System.Text.Json;
 using System.Linq;
 
 namespace ScreenSaver.Services
@@ -24,7 +24,7 @@ namespace ScreenSaver.Services
             _dataPath = Path.Combine(extensionsDataPath, App.Id, Files.Data);
             if (File.Exists(_dataPath))
             {
-                _gameGroups = JsonConvert.DeserializeObject<IList<GameGroup>>(File.ReadAllText(_dataPath));
+                _gameGroups = JsonSerializer.Deserialize<IList<GameGroup>>(File.ReadAllText(_dataPath));
             }
 
             if (_gameGroups is null)
@@ -200,7 +200,7 @@ namespace ScreenSaver.Services
 
         private void SaveGameGroups()
         {
-            var groupsJson = JsonConvert.SerializeObject(_gameGroups);
+            var groupsJson = JsonSerializer.Serialize(_gameGroups);
 
             try
             {

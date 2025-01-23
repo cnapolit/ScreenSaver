@@ -12,6 +12,9 @@ using ScreenSaver.Common.Imports;
 using ScreenSaver.Models;
 using static ScreenSaver.Common.Imports.User32;
 using Keys = System.Windows.Forms.Keys;
+using static SDL3.SDL;
+using System.Drawing;
+using System.Runtime.InteropServices;
 
 namespace ScreenSaver.Services.State.Poll
 {
@@ -74,9 +77,105 @@ namespace ScreenSaver.Services.State.Poll
 
         #region SetupPolling
 
-        private void Setup()
+        private unsafe void Setup()
         {
             _hookID = SetHook(_proc);
+
+            var result = SDL_SetHint(SDL_HINT_JOYSTICK_ALLOW_BACKGROUND_EVENTS, "1");
+            if (!result)
+            {
+                logger.Error($"SDL_SetHint Error: {SDL_GetError()}");
+                return;
+            }
+
+            result = SDL_Init(SDL_InitFlags.SDL_INIT_JOYSTICK | SDL_InitFlags.SDL_INIT_GAMEPAD | SDL_InitFlags.SDL_INIT_EVENTS);
+            var err = SDL_GetError();
+            if (!result)
+            {
+                logger.Error($"SDL_Init Error: {SDL_GetError()}");
+                return;
+            }
+
+            result = SDL_InitSubSystem(SDL_InitFlags.SDL_INIT_JOYSTICK | SDL_InitFlags.SDL_INIT_GAMEPAD | SDL_InitFlags.SDL_INIT_EVENTS);
+            err = SDL_GetError();
+            if (!result)
+            {
+                logger.Error($"SDL_InitSubSystem Error: {SDL_GetError()}");
+                return;
+            }
+
+            result = SDL_AddEventWatch(OnSdlEvent, IntPtr.Zero);
+            err = SDL_GetError();
+            if (!result)
+            {
+                logger.Error($"SDL_AddEventWatch Error: {SDL_GetError()}");
+                return;
+            }
+
+            SDL_SetEventEnabled((uint)SDL_EventType.SDL_EVENT_KEY_DOWN, new SDLBool(1));
+            SDL_SetEventEnabled((uint)SDL_EventType.SDL_EVENT_GAMEPAD_BUTTON_DOWN, new SDLBool(1));
+        }
+
+        private unsafe bool OnSdlEvent(IntPtr userdata, SDL_Event* evt)
+            => OnSdlEvent(userdata, *evt);
+
+
+        private bool OnSdlEvent(IntPtr userdata, SDL_Event evt)
+        {
+            switch ((SDL_EventType)evt.type)
+            {
+                case SDL_EventType.SDL_EVENT_KEY_DOWN:
+                case SDL_EventType.SDL_EVENT_KEY_UP:
+                case SDL_EventType.SDL_EVENT_MOUSE_MOTION:
+                case SDL_EventType.SDL_EVENT_MOUSE_BUTTON_DOWN:
+                case SDL_EventType.SDL_EVENT_MOUSE_BUTTON_UP:
+                case SDL_EventType.SDL_EVENT_MOUSE_WHEEL:
+                case SDL_EventType.SDL_EVENT_JOYSTICK_AXIS_MOTION:
+                case SDL_EventType.SDL_EVENT_JOYSTICK_BALL_MOTION:
+                case SDL_EventType.SDL_EVENT_JOYSTICK_HAT_MOTION:
+                case SDL_EventType.SDL_EVENT_JOYSTICK_BUTTON_DOWN:
+                case SDL_EventType.SDL_EVENT_JOYSTICK_BUTTON_UP:
+                case SDL_EventType.SDL_EVENT_JOYSTICK_UPDATE_COMPLETE:
+                case SDL_EventType.SDL_EVENT_GAMEPAD_AXIS_MOTION:
+                case SDL_EventType.SDL_EVENT_GAMEPAD_BUTTON_DOWN:
+                case SDL_EventType.SDL_EVENT_GAMEPAD_BUTTON_UP:
+                case SDL_EventType.SDL_EVENT_GAMEPAD_REMAPPED:
+                case SDL_EventType.SDL_EVENT_GAMEPAD_TOUCHPAD_DOWN:
+                case SDL_EventType.SDL_EVENT_GAMEPAD_TOUCHPAD_MOTION:
+                case SDL_EventType.SDL_EVENT_GAMEPAD_TOUCHPAD_UP:
+                case SDL_EventType.SDL_EVENT_GAMEPAD_UPDATE_COMPLETE:
+                case SDL_EventType.SDL_EVENT_FINGER_DOWN:
+                case SDL_EventType.SDL_EVENT_FINGER_UP:
+                case SDL_EventType.SDL_EVENT_FINGER_MOTION:
+                case SDL_EventType.SDL_EVENT_FINGER_CANCELED:
+                case SDL_EventType.SDL_EVENT_SENSOR_UPDATE:
+                case SDL_EventType.SDL_EVENT_PEN_DOWN:
+                case SDL_EventType.SDL_EVENT_PEN_UP:
+                case SDL_EventType.SDL_EVENT_PEN_BUTTON_DOWN:
+                case SDL_EventType.SDL_EVENT_PEN_BUTTON_UP:
+                case SDL_EventType.SDL_EVENT_PEN_MOTION:
+                    _lastInputTimeStampInMs = Environment.TickCount;
+                    return true;
+
+
+                case SDL_EventType.SDL_EVENT_JOYSTICK_ADDED:
+                    break;
+                case SDL_EventType.SDL_EVENT_JOYSTICK_REMOVED:
+                    break;
+                case SDL_EventType.SDL_EVENT_KEYBOARD_ADDED:
+                    break;
+                case SDL_EventType.SDL_EVENT_KEYBOARD_REMOVED:
+                    break;
+                case SDL_EventType.SDL_EVENT_MOUSE_ADDED:
+                    break;
+                case SDL_EventType.SDL_EVENT_MOUSE_REMOVED:
+                    break;
+                case SDL_EventType.SDL_EVENT_GAMEPAD_ADDED:
+                    break;
+                case SDL_EventType.SDL_EVENT_GAMEPAD_REMOVED:
+                    break;
+            }
+            return false;
         }
 
         private static readonly LowLevelMouseProc _proc = (int nCode, IntPtr wParam, IntPtr lParam) =>
@@ -155,6 +254,28 @@ namespace ScreenSaver.Services.State.Poll
                 Task.Delay(16);
 
                 if (AKeyStateChanged())
+                {
+                    _lastInputTimeStampInMs = Environment.TickCount;
+                }
+
+                var pads = SDL_GetGamepads(out var count);
+                if (pads != null && count != 0)
+                {
+                    var managedArray = new byte[count * 4];
+                    Marshal.Copy(pads, managedArray, 0, count * 4);
+                    foreach (var pad in managedArray)
+                    {
+                        var gamepad = SDL_GetGamepadFromID((uint)pad);
+                        if (pad != 0)
+                        {
+                            _lastInputTimeStampInMs = Environment.TickCount;
+                            break;
+                        }
+                    }
+                    SDL_free(pads);
+                }
+
+                if (SDL_PollEvent(out var sdlEvent) && OnSdlEvent(IntPtr.Zero, sdlEvent))
                 {
                     _lastInputTimeStampInMs = Environment.TickCount;
                 }

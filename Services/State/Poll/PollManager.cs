@@ -38,7 +38,7 @@ namespace ScreenSaver.Services.State.Poll
 
         private static          int                            _lastInputTimeStampInMs;
         private static          int                     _lastScreenChangeTimeStampInMs;
-
+        private        readonly bool                                     _soundsLoaded;
         private        readonly IDictionary<Keys, bool>                     _keyStates;
         private        readonly IWindowsManager                    _screenSaverManager;
 
@@ -51,10 +51,11 @@ namespace ScreenSaver.Services.State.Poll
 
         #endregion
 
-        public PollManager(ScreenSaverSettings settings, IWindowsManager screenSaverManager)
+        public PollManager(ScreenSaverSettings settings, IWindowsManager screenSaverManager, bool soundsLoaded)
         {
             Update(settings); 
             _screenSaverManager = screenSaverManager;
+            _soundsLoaded = soundsLoaded;
 
             // I'm too lazy to type this out. Besides, what if it changes ¯\_(ツ)_/¯
             _keyStates = new Dictionary<Keys, bool>();
@@ -301,20 +302,39 @@ namespace ScreenSaver.Services.State.Poll
 
             if (screenSaverIsNotRunning && TimeToStart)
             {
-                Process.Start(App.SoundsUriPause);
+                Process process = null;
+                if (_soundsLoaded)
+                {
+                    process = Process.Start(App.SoundsUriPause);
+                }
 
                 Application.Current.Dispatcher.Invoke(_screenSaverManager.StartScreenSaver);
                 _timeSinceStart = Environment.TickCount + 100;
                 _lastScreenChangeTimeStampInMs = Environment.TickCount;
                 time = DateTime.Now;
                 
+                if (_soundsLoaded)
+                {
+                    process.WaitForExit();
+                    process.Dispose();
+                }
+                
             }
             else if (_lastInputTimeStampInMs > _timeSinceStart)
             {
+                Process process = null;
+                if (_soundsLoaded)
+                {
+                    process = Process.Start(App.SoundsUriPlay);
+                }
                 _timeSinceStart = null;
                 Application.Current.Dispatcher.Invoke(_screenSaverManager.StopScreenSaver);
 
-                Process.Start(App.SoundsUriPlay);
+                if (_soundsLoaded)
+                {
+                    process.WaitForExit();
+                    process.Dispose();
+                }
             }
             else if (!screenSaverIsNotRunning && TimeToUpdate)
             {

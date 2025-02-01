@@ -15,3 +15,5 @@
 /obj/Release
 /Playnite
 /release
+/.vs/ScreenSaver.csproj.dtbcache.json
+*.DS_Store

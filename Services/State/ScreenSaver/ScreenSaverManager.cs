@@ -21,6 +21,7 @@ namespace ScreenSaver.Services.State.ScreenSaver
         private readonly IPlayniteAPI               _playniteApi;
         private readonly IPollManager               _pollManager;
         private readonly IWindowsManager         _windowsManager;
+        private readonly bool                      _soundsLoaded;
         private          ScreenSaverSettings           _settings;
         private          int                    _activeGameCount;
 
@@ -29,8 +30,10 @@ namespace ScreenSaver.Services.State.ScreenSaver
             _playniteApi = playniteApi;
             _settings    =    settings;
 
+            var soundsGuid = Guid.Parse(App.Sounds);
+            _soundsLoaded = playniteApi.Addons.Plugins.Any(p => p.Id == soundsGuid);
             _windowsManager = new WindowsManager (playniteApi, gameGroupManager, settings,  UpdatePollState);
-            _pollManager    = new PollManager    (                               settings,  _windowsManager);
+            _pollManager    = new PollManager    (settings, _windowsManager, _soundsLoaded);
         }
 
         #endregion
@@ -125,13 +128,33 @@ namespace ScreenSaver.Services.State.ScreenSaver
         public void Preview(Game game)
         {
             Pause(true, false);
-            Process.Start(App.SoundsUriPause);
+            Process process = null;
+            if (_soundsLoaded)
+            {
+                process = Process.Start(App.SoundsUriPause);
+            }
+
             _windowsManager.PreviewScreenSaver(game, () =>
             {
+                Process playProcess = null;
+                if (_soundsLoaded)
+                {
+                    playProcess = Process.Start(App.SoundsUriPlay);
+                }
                 Start(false, false);
-                Process.Start(App.SoundsUriPlay);
+                if (_soundsLoaded)
+                {
+                    playProcess.WaitForExit();
+                    playProcess.Dispose();
+                }
 
             });
+
+            if (_soundsLoaded)
+            {
+                process.WaitForExit();
+                process.Dispose();
+            }
         }
 
         #endregion

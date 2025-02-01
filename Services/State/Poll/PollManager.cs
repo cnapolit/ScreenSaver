@@ -155,7 +155,9 @@ namespace ScreenSaver.Services.State.Poll
             while (_isPolling)
             {
                 UpdateScreenSaverState(ref time);
-                Task.Delay(100).Wait();
+
+                // don't need to be as responsive if the screen saver is not visible
+                Task.Delay(_timeSinceStart is null ? 1000 : 100).Wait();
 
                 if (AKeyStateChanged())
                 {

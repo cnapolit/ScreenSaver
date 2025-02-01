@@ -108,7 +108,7 @@ namespace ScreenSaver.Services.State.Poll
                 case null:
                 case TaskStatus.RanToCompletion:
                     _isPolling = true;
-                    _screenSaverTask = Task.Run(() => PollForInput(startImmediately));
+                    _screenSaverTask = PollForInput(startImmediately);
                     break;
                 case TaskStatus.Created:
                 case TaskStatus.Running:
@@ -130,14 +130,14 @@ namespace ScreenSaver.Services.State.Poll
         // I would rather rely on a timer, but that isn't ideal until a event handler for controllers available.
         // Otherwise, we would still need to poll for gamepad input to close the screen saver
         // and I'm not polling and managing a timer together.
-        private void PollForInput(bool startImmediately) 
+        private async Task PollForInput(bool startImmediately) 
         { 
-            try { PollLoop(startImmediately); } 
+            try { await PollLoop(startImmediately); } 
             catch (Exception e) { _logger.Error(e, "Something Went Wrong while running ScreenSaver Poll."); }
         }
 
 
-        private void PollLoop(bool startImediately)
+        private async Task PollLoop(bool startImediately)
         {
 
             var count = SDL_NumJoysticks();
@@ -148,7 +148,6 @@ namespace ScreenSaver.Services.State.Poll
                 sdlControllers.Add(new GameController(i));
             }
 
-            var packetNumbers = new int?[4];
             _lastScreenChangeTimeStampInMs = 0;
             _lastInputTimeStampInMs = startImediately ? 0 : Environment.TickCount;
             DateTime time = default;
@@ -157,7 +156,7 @@ namespace ScreenSaver.Services.State.Poll
                 UpdateScreenSaverState(ref time);
 
                 // don't need to be as responsive if the screen saver is not visible
-                Task.Delay(_timeSinceStart is null ? 1000 : 100).Wait();
+                await Task.Delay(_timeSinceStart is null ? 1000 : 100);
 
                 if (AKeyStateChanged())
                 {
@@ -225,7 +224,7 @@ namespace ScreenSaver.Services.State.Poll
                     process = Process.Start(App.SoundsUriPlay);
                 }
                 _timeSinceStart = null;
-                Application.Current.Dispatcher.Invoke(_screenSaverManager.StopScreenSaver);
+                Application.Current.Dispatcher.InvokeAsync(_screenSaverManager.StopScreenSaver);
 
                 if (_soundsLoaded)
                 {
@@ -254,7 +253,7 @@ namespace ScreenSaver.Services.State.Poll
         // A keyboard hook would be better, but not necessary until we can find an event or hook for controllers
         private bool AKeyStateChanged()
         {
-            bool keyChanged = false;
+            var keyChanged = false;
 
             foreach (var key in _keys)
             {

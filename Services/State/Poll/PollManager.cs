@@ -1,7 +1,6 @@
 ﻿using Playnite.SDK;
 using ScreenSaver.Common.Constants;
 using ScreenSaver.Services.UI.Windows;
-using SharpDX.XInput;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -11,10 +10,8 @@ using System.Windows;
 using ScreenSaver.Common.Imports;
 using ScreenSaver.Models;
 using static ScreenSaver.Common.Imports.User32;
+using static SDL2.SDL;
 using Keys = System.Windows.Forms.Keys;
-using static SDL3.SDL;
-using System.Drawing;
-using System.Runtime.InteropServices;
 
 namespace ScreenSaver.Services.State.Poll
 {
@@ -24,12 +21,12 @@ namespace ScreenSaver.Services.State.Poll
 
         #region Variables
 
-        private static readonly ILogger     logger  =                                         LogManager.GetLogger();
-        private static readonly Keys[]      badKeys = new[] { Keys.KeyCode, Keys.Modifiers, Keys.None, Keys.Packet };
+        private static readonly ILogger     _logger  =                                         LogManager.GetLogger();
+        private static readonly Keys[]      _badKeys = new[] { Keys.KeyCode, Keys.Modifiers, Keys.None, Keys.Packet };
         private static readonly IList<Keys> _keys   = Enum.
             GetValues(typeof(Keys)).
             Cast<Keys>().
-            Where(k => !badKeys.Contains(k)).
+            Where(k => !_badKeys.Contains(k)).
             ToList();
 
         private static          IntPtr                                         _hookID;
@@ -81,102 +78,7 @@ namespace ScreenSaver.Services.State.Poll
         private unsafe void Setup()
         {
             _hookID = SetHook(_proc);
-
-            var result = SDL_SetHint(SDL_HINT_JOYSTICK_ALLOW_BACKGROUND_EVENTS, "1");
-            if (!result)
-            {
-                logger.Error($"SDL_SetHint Error: {SDL_GetError()}");
-                return;
-            }
-
-            result = SDL_Init(SDL_InitFlags.SDL_INIT_JOYSTICK | SDL_InitFlags.SDL_INIT_GAMEPAD | SDL_InitFlags.SDL_INIT_EVENTS);
-            var err = SDL_GetError();
-            if (!result)
-            {
-                logger.Error($"SDL_Init Error: {SDL_GetError()}");
-                return;
-            }
-
-            result = SDL_InitSubSystem(SDL_InitFlags.SDL_INIT_JOYSTICK | SDL_InitFlags.SDL_INIT_GAMEPAD | SDL_InitFlags.SDL_INIT_EVENTS);
-            err = SDL_GetError();
-            if (!result)
-            {
-                logger.Error($"SDL_InitSubSystem Error: {SDL_GetError()}");
-                return;
-            }
-
-            result = SDL_AddEventWatch(OnSdlEvent, IntPtr.Zero);
-            err = SDL_GetError();
-            if (!result)
-            {
-                logger.Error($"SDL_AddEventWatch Error: {SDL_GetError()}");
-                return;
-            }
-
-            SDL_SetEventEnabled((uint)SDL_EventType.SDL_EVENT_KEY_DOWN, new SDLBool(1));
-            SDL_SetEventEnabled((uint)SDL_EventType.SDL_EVENT_GAMEPAD_BUTTON_DOWN, new SDLBool(1));
-        }
-
-        private unsafe bool OnSdlEvent(IntPtr userdata, SDL_Event* evt)
-            => OnSdlEvent(userdata, *evt);
-
-
-        private bool OnSdlEvent(IntPtr userdata, SDL_Event evt)
-        {
-            switch ((SDL_EventType)evt.type)
-            {
-                case SDL_EventType.SDL_EVENT_KEY_DOWN:
-                case SDL_EventType.SDL_EVENT_KEY_UP:
-                case SDL_EventType.SDL_EVENT_MOUSE_MOTION:
-                case SDL_EventType.SDL_EVENT_MOUSE_BUTTON_DOWN:
-                case SDL_EventType.SDL_EVENT_MOUSE_BUTTON_UP:
-                case SDL_EventType.SDL_EVENT_MOUSE_WHEEL:
-                case SDL_EventType.SDL_EVENT_JOYSTICK_AXIS_MOTION:
-                case SDL_EventType.SDL_EVENT_JOYSTICK_BALL_MOTION:
-                case SDL_EventType.SDL_EVENT_JOYSTICK_HAT_MOTION:
-                case SDL_EventType.SDL_EVENT_JOYSTICK_BUTTON_DOWN:
-                case SDL_EventType.SDL_EVENT_JOYSTICK_BUTTON_UP:
-                case SDL_EventType.SDL_EVENT_JOYSTICK_UPDATE_COMPLETE:
-                case SDL_EventType.SDL_EVENT_GAMEPAD_AXIS_MOTION:
-                case SDL_EventType.SDL_EVENT_GAMEPAD_BUTTON_DOWN:
-                case SDL_EventType.SDL_EVENT_GAMEPAD_BUTTON_UP:
-                case SDL_EventType.SDL_EVENT_GAMEPAD_REMAPPED:
-                case SDL_EventType.SDL_EVENT_GAMEPAD_TOUCHPAD_DOWN:
-                case SDL_EventType.SDL_EVENT_GAMEPAD_TOUCHPAD_MOTION:
-                case SDL_EventType.SDL_EVENT_GAMEPAD_TOUCHPAD_UP:
-                case SDL_EventType.SDL_EVENT_GAMEPAD_UPDATE_COMPLETE:
-                case SDL_EventType.SDL_EVENT_FINGER_DOWN:
-                case SDL_EventType.SDL_EVENT_FINGER_UP:
-                case SDL_EventType.SDL_EVENT_FINGER_MOTION:
-                case SDL_EventType.SDL_EVENT_FINGER_CANCELED:
-                case SDL_EventType.SDL_EVENT_SENSOR_UPDATE:
-                case SDL_EventType.SDL_EVENT_PEN_DOWN:
-                case SDL_EventType.SDL_EVENT_PEN_UP:
-                case SDL_EventType.SDL_EVENT_PEN_BUTTON_DOWN:
-                case SDL_EventType.SDL_EVENT_PEN_BUTTON_UP:
-                case SDL_EventType.SDL_EVENT_PEN_MOTION:
-                    _lastInputTimeStampInMs = Environment.TickCount;
-                    return true;
-
-
-                case SDL_EventType.SDL_EVENT_JOYSTICK_ADDED:
-                    break;
-                case SDL_EventType.SDL_EVENT_JOYSTICK_REMOVED:
-                    break;
-                case SDL_EventType.SDL_EVENT_KEYBOARD_ADDED:
-                    break;
-                case SDL_EventType.SDL_EVENT_KEYBOARD_REMOVED:
-                    break;
-                case SDL_EventType.SDL_EVENT_MOUSE_ADDED:
-                    break;
-                case SDL_EventType.SDL_EVENT_MOUSE_REMOVED:
-                    break;
-                case SDL_EventType.SDL_EVENT_GAMEPAD_ADDED:
-                    break;
-                case SDL_EventType.SDL_EVENT_GAMEPAD_REMOVED:
-                    break;
-            }
-            return false;
+            SDL_Init(SDL_INIT_GAMECONTROLLER | SDL_INIT_JOYSTICK);
         }
 
         private static readonly LowLevelMouseProc _proc = (int nCode, IntPtr wParam, IntPtr lParam) =>
@@ -220,7 +122,7 @@ namespace ScreenSaver.Services.State.Poll
                     }
                     break;
                 default:
-                    logger.Warn($"ScreenSaver Task was in an unexpected state: {_screenSaverTask.Status}");
+                    _logger.Warn($"ScreenSaver Task was in an unexpected state: {_screenSaverTask.Status}");
                     break;
             }
         }
@@ -231,24 +133,25 @@ namespace ScreenSaver.Services.State.Poll
         private void PollForInput(bool startImmediately) 
         { 
             try { PollLoop(startImmediately); } 
-            catch (Exception e) { logger.Error(e, "Something Went Wrong while running ScreenSaver Poll."); } 
+            catch (Exception e) { _logger.Error(e, "Something Went Wrong while running ScreenSaver Poll."); }
         }
+
 
         private void PollLoop(bool startImediately)
         {
-            var controllers = new Controller[]
+
+            var count = SDL_NumJoysticks();
+            var sdlControllers = new List<GameController>(count);
+            for (var i = 0; i < count; i++)
             {
-                new Controller(UserIndex.   One),
-                new Controller(UserIndex.   Two),
-                new Controller(UserIndex. Three),
-                new Controller(UserIndex.  Four)
-            };
+                if (SDL_IsGameController(i) != SDL_bool.SDL_TRUE) continue;
+                sdlControllers.Add(new GameController(i));
+            }
 
             var packetNumbers = new int?[4];
             _lastScreenChangeTimeStampInMs = 0;
             _lastInputTimeStampInMs = startImediately ? 0 : Environment.TickCount;
             DateTime time = default;
-
             while (_isPolling)
             {
                 UpdateScreenSaverState(ref time);
@@ -259,39 +162,31 @@ namespace ScreenSaver.Services.State.Poll
                     _lastInputTimeStampInMs = Environment.TickCount;
                 }
 
-                var pads = SDL_GetGamepads(out var count);
-                if (pads != null && count != 0)
+                while (SDL_PollEvent(out var sdlEv) == 1)
                 {
-                    var managedArray = new byte[count * 4];
-                    Marshal.Copy(pads, managedArray, 0, count * 4);
-                    foreach (var pad in managedArray)
+                    var index = sdlEv.cdevice.which;
+                    switch (sdlEv.type)
                     {
-                        var gamepad = SDL_GetGamepadFromID((uint)pad);
-                        if (pad != 0)
-                        {
-                            _lastInputTimeStampInMs = Environment.TickCount;
+                        case SDL_EventType.SDL_CONTROLLERDEVICEADDED:
+                            if (sdlControllers.All(c => c.InstanceId != index))
+                            {
+                                sdlControllers.Add(new GameController(index));
+                            }
                             break;
-                        }
+                        case SDL_EventType.SDL_CONTROLLERDEVICEREMOVED:
+                            var controller = sdlControllers.FirstOrDefault(c => c.InstanceId == index);
+                            if (controller != null)
+                            {
+                                sdlControllers.Remove(controller);
+                            }
+                            break;
                     }
-                    SDL_free(pads);
                 }
 
-                if (SDL_PollEvent(out var sdlEvent) && OnSdlEvent(IntPtr.Zero, sdlEvent))
+                SDL_GameControllerUpdate();
+                if (sdlControllers.Where(controller => controller.ProcessState()).ToList().Any())
                 {
                     _lastInputTimeStampInMs = Environment.TickCount;
-                }
-
-                for (int i = 0; i < 4; i++)
-                {
-                    var newPacketNumber = 0;
-                    var controller = controllers[i];
-                    var oldPacketNumber = packetNumbers[i];
-
-                    if (ControllerStateChanged(controller, oldPacketNumber, ref newPacketNumber))
-                    {
-                        _lastInputTimeStampInMs = Environment.TickCount;
-                        packetNumbers[i] = newPacketNumber;
-                    }
                 }
             }
         }
@@ -312,7 +207,7 @@ namespace ScreenSaver.Services.State.Poll
                 _timeSinceStart = Environment.TickCount + 100;
                 _lastScreenChangeTimeStampInMs = Environment.TickCount;
                 time = DateTime.Now;
-                
+
                 if (_soundsLoaded)
                 {
                     process.WaitForExit();
@@ -373,11 +268,6 @@ namespace ScreenSaver.Services.State.Poll
         }
 
         public static bool IsKeyPushedDown(Keys key) => 0 != (GetAsyncKeyState(key) & 0x8000);
-
-        // Does not support DirectInput (Ps4/5, Switch, etc.). Doesn't matter until Playnite supports it.
-        // May eventually ditch SharpDx for dll imports if need for guide button arises.
-        private static bool ControllerStateChanged(Controller controller, int? oldPacketNumber, ref int newPacketNumber)
-            => controller.IsConnected && (newPacketNumber = controller.GetState().PacketNumber) != oldPacketNumber;
 
         #endregion
 

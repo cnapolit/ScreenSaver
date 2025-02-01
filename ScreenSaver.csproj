@@ -125,8 +125,9 @@
     <Compile Include="Common\Constants\Imports.cs" />
     <Compile Include="Common\Extensions\IEnumerableExtensions.cs" />
     <Compile Include="Common\Imports\Kernel32.cs" />
-    <Compile Include="Common\Imports\SDL.Legacy.cs" />
+    <Compile Include="Common\Imports\SDL.cs" />
     <Compile Include="Common\Imports\User32.cs" />
+    <Compile Include="Models\GameController.cs" />
     <Compile Include="Models\GameGroup.cs" />
     <Compile Include="Services\GameGroupManager\GameGroupManager.cs" />
     <Compile Include="Services\GameGroupManager\IGameGroupManager.cs" />
@@ -407,7 +408,7 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="SDL3.dll">
+    <Content Include="SDL2.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

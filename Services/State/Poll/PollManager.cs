@@ -42,7 +42,7 @@ namespace ScreenSaver.Services.State.Poll
         private                 bool                                        _isPolling;
         private                 int?                                   _timeSinceStart;
         private                 uint                                 _gameIntervalInMs;
-        private                 uint                          _ScreenSaverIntervalInMs;
+        private                 uint                          _screenSaverIntervalInMs;
 
         private                 ScreenSaverSettings                          _settings;
 
@@ -75,13 +75,13 @@ namespace ScreenSaver.Services.State.Poll
 
         #region SetupPolling
 
-        private unsafe void Setup()
+        private static void Setup()
         {
             _hookID = SetHook(_proc);
             SDL_Init(SDL_INIT_GAMECONTROLLER | SDL_INIT_JOYSTICK);
         }
 
-        private static readonly LowLevelMouseProc _proc = (int nCode, IntPtr wParam, IntPtr lParam) =>
+        private static readonly LowLevelMouseProc _proc = (nCode, wParam, lParam) =>
         {
             if (nCode >= 0)
             {
@@ -92,9 +92,9 @@ namespace ScreenSaver.Services.State.Poll
 
         private static IntPtr SetHook(LowLevelMouseProc proc)
         {
-            using (Process curProcess = Process.GetCurrentProcess())
-            using (ProcessModule curModule = curProcess.MainModule)
-                return SetWindowsHookEx(Imports.WH_MOUSE_LL, proc, Kernel32.GetModuleHandle(curModule.ModuleName), 0);
+            using (var curProcess = Process.GetCurrentProcess())
+            using (var curModule = curProcess.MainModule)
+            return SetWindowsHookEx(Imports.WH_MOUSE_LL, proc, Kernel32.GetModuleHandle(curModule.ModuleName), 0);
         }
 
         #endregion
@@ -132,22 +132,14 @@ namespace ScreenSaver.Services.State.Poll
         // and I'm not polling and managing a timer together.
         private async Task PollForInput(bool startImmediately) 
         { 
-            try { await PollLoop(startImmediately); } 
+            try                 { await PollLoop(startImmediately); } 
             catch (Exception e) { _logger.Error(e, "Something Went Wrong while running ScreenSaver Poll."); }
         }
 
 
         private async Task PollLoop(bool startImediately)
         {
-
-            var count = SDL_NumJoysticks();
-            var sdlControllers = new List<GameController>(count);
-            for (var i = 0; i < count; i++)
-            {
-                if (SDL_IsGameController(i) != SDL_bool.SDL_TRUE) continue;
-                sdlControllers.Add(new GameController(i));
-            }
-
+            var controllers = GetControllers();
             _lastScreenChangeTimeStampInMs = 0;
             _lastInputTimeStampInMs = startImediately ? 0 : Environment.TickCount;
             DateTime time = default;
@@ -158,34 +150,10 @@ namespace ScreenSaver.Services.State.Poll
                 // don't need to be as responsive if the screen saver is not visible
                 await Task.Delay(_timeSinceStart is null ? 1000 : 100);
 
-                if (AKeyStateChanged())
-                {
-                    _lastInputTimeStampInMs = Environment.TickCount;
-                }
+                var aKeyStateChanged = AKeyStateChanged();
+                var aControllerChanged = AControllerChanged(controllers);
 
-                while (SDL_PollEvent(out var sdlEv) == 1)
-                {
-                    var index = sdlEv.cdevice.which;
-                    switch (sdlEv.type)
-                    {
-                        case SDL_EventType.SDL_CONTROLLERDEVICEADDED:
-                            if (sdlControllers.All(c => c.InstanceId != index))
-                            {
-                                sdlControllers.Add(new GameController(index));
-                            }
-                            break;
-                        case SDL_EventType.SDL_CONTROLLERDEVICEREMOVED:
-                            var controller = sdlControllers.FirstOrDefault(c => c.InstanceId == index);
-                            if (controller != null)
-                            {
-                                sdlControllers.Remove(controller);
-                            }
-                            break;
-                    }
-                }
-
-                SDL_GameControllerUpdate();
-                if (sdlControllers.Where(controller => controller.ProcessState()).ToList().Any())
+                if (aKeyStateChanged || aControllerChanged)
                 {
                     _lastInputTimeStampInMs = Environment.TickCount;
                 }
@@ -247,7 +215,7 @@ namespace ScreenSaver.Services.State.Poll
             }
         }
 
-        private bool  TimeToStart => Environment.TickCount -        _lastInputTimeStampInMs > _ScreenSaverIntervalInMs;
+        private bool  TimeToStart => Environment.TickCount -        _lastInputTimeStampInMs > _screenSaverIntervalInMs;
         private bool TimeToUpdate => Environment.TickCount - _lastScreenChangeTimeStampInMs >        _gameIntervalInMs;
 
         // A keyboard hook would be better, but not necessary until we can find an event or hook for controllers
@@ -269,6 +237,45 @@ namespace ScreenSaver.Services.State.Poll
         }
 
         public static bool IsKeyPushedDown(Keys key) => 0 != (GetAsyncKeyState(key) & 0x8000);
+
+        private static List<GameController> GetControllers()
+        {
+            var count = SDL_NumJoysticks();
+            var controllers = new List<GameController>(count);
+            for (var i = 0; i < count; i++)
+            {
+                if (SDL_IsGameController(i) != SDL_bool.SDL_TRUE) continue;
+                controllers.Add(new GameController(i));
+            }
+            return controllers;
+        }
+
+        private static bool AControllerChanged(List<GameController> controllers)
+        {
+            while (SDL_PollEvent(out var sdlEv) == 1)
+            {
+                var index = sdlEv.cdevice.which;
+                switch (sdlEv.type)
+                {
+                    case SDL_EventType.SDL_CONTROLLERDEVICEADDED:
+                        if (controllers.All(c => c.InstanceId != index))
+                        {
+                            controllers.Add(new GameController(index));
+                        }
+                        break;
+                    case SDL_EventType.SDL_CONTROLLERDEVICEREMOVED:
+                        var controller = controllers.FirstOrDefault(c => c.InstanceId == index);
+                        if (controller != null)
+                        {
+                            controllers.Remove(controller);
+                        }
+                        break;
+                }
+            }
+
+            SDL_GameControllerUpdate();
+            return controllers.Where(c => c.ProcessState()).ToList().Any();
+        }
 
         #endregion
 
@@ -297,7 +304,7 @@ namespace ScreenSaver.Services.State.Poll
         {
             _settings                =                                 settings;
             _gameIntervalInMs        = _settings. GameTransitionInterval * 1000;
-            _ScreenSaverIntervalInMs = _settings.    ScreenSaverInterval * 1000;
+            _screenSaverIntervalInMs = _settings.    ScreenSaverInterval * 1000;
         }
 
         #endregion

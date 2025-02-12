@@ -468,7 +468,7 @@ namespace ScreenSaver.Services.UI.Windows
 
             if (sortField != "None")
             {
-                content = content.OrderBy(GetSelector(sortField), currentGameGroup?.Ascending ?? true);
+                content = content.Order(GetSelector(sortField), currentGameGroup?.Ascending ?? true);
             }
             else if (hasSelectedGames && currentGameGroup?.Filter?.SortingOrder != null)
             {

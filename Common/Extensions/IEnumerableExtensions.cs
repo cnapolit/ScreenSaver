@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection.Emit;
 
 namespace ScreenSaver.Common.Extensions
 {
@@ -14,12 +13,12 @@ namespace ScreenSaver.Common.Extensions
             return result;
         }
 
-        public static IOrderedEnumerable<TSource> OrderBy<TSource, TKey>(
+        public static IOrderedEnumerable<TSource> Order<TSource, TKey>(
           this IEnumerable<TSource> source, Func<TSource, TKey> keySelector, bool ascending = true) 
             => ascending ? source.OrderBy(keySelector): source.OrderByDescending(keySelector);
 
         public static IOrderedEnumerable<T> Order<T>(this IEnumerable<T> source, bool ascending = true)
-            => OrderBy(source, k => k, ascending);
+            => Order(source, k => k, ascending);
 
         public static string StrJoin<T>(this IEnumerable<T> source, string str)
             => string.Join(str, source);

@@ -1,0 +1,5 @@
+﻿id = "cnapolit.ScreenSaver"
+name = "ScreenSaver"
+author = "Cameron Napolitano"
+version = "3.0.0"
+module = "ScreenSaver.dll"

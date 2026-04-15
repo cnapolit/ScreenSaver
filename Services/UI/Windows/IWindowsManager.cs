@@ -1,14 +1,14 @@
-﻿using Playnite.SDK.Models;
-using System;
+﻿using Playnite;
+using static ScreenSaver.Services.UI.Windows.WindowsManager;
 
-namespace ScreenSaver.Services.UI.Windows
+namespace ScreenSaver.Services.UI.Windows;
+
+internal interface IWindowsManager
 {
-    internal interface IWindowsManager : IScreenSaverSettings
-    {
-        void StartScreenSaver();
-        void StopScreenSaver();
-        void UpdateScreenSaver();
-        void UpdateScreenSaverTime();
-        void PreviewScreenSaver(Game game, Action onCloseCallBack);
-    }
+    Task StartScreenSaverAsync();
+    void StopScreenSaver();
+    Task UpdateScreenSaverAsync();
+    void UpdateScreenSaverTime();
+    void PreviewScreenSaver(Game game, Action onCloseCallBack);
+    event OnStopCallback? OnStop;
 }

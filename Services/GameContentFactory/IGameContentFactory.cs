@@ -1,10 +1,9 @@
-﻿using Playnite.SDK.Models;
+﻿using Playnite;
 using ScreenSaver.Models;
 
-namespace ScreenSaver.Services
+namespace ScreenSaver.Services;
+
+internal interface IGameContentFactory
 {
-    internal interface IGameContentFactory : IScreenSaverSettings
-    {
-        GameContent ConstructGameContent(Game game);
-    }
+    GameContent ConstructGameContent(Game game);
 }

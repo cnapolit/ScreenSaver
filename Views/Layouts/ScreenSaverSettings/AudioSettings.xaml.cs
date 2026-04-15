@@ -1,15 +1,14 @@
 ﻿using System.Windows.Controls;
 
-namespace ScreenSaver.Views.Layouts.ScreenSaverSettings
+namespace ScreenSaver.Views.Layouts.ScreenSaverSettings;
+
+/// <summary>
+/// Interaction logic for AudioSettings.xaml
+/// </summary>
+public partial class AudioSettings : UserControl
 {
-    /// <summary>
-    /// Interaction logic for AudioSettings.xaml
-    /// </summary>
-    public partial class AudioSettings : UserControl
+    public AudioSettings()
     {
-        public AudioSettings()
-        {
-            InitializeComponent();
-        }
+        InitializeComponent();
     }
 }

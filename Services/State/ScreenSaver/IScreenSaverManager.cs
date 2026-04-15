@@ -1,13 +1,13 @@
-﻿using Playnite.SDK.Models;
+﻿using Playnite;
 
-namespace ScreenSaver.Services.State.ScreenSaver
+namespace ScreenSaver.Services.State.ScreenSaver;
+
+internal interface IScreenSaverManager
 {
-    internal interface IScreenSaverManager : IScreenSaverSettings
-    {
-        void SetupPolling();
-        void StartPolling(bool manual, bool gameStarted);
-        void PausePolling(bool ignoreCheck, bool gameStopped);
-        void StopPolling();
-        void PreviewScreenSaver(Game game);
-    }
+    void SetupPolling();
+    void StartPolling(bool manual, bool gameStarted);
+    void PausePolling(bool ignoreCheck, bool gameStopped);
+    void StopPolling();
+    void PreviewScreenSaver(Game game);
+    void UpdatePollState();
 }

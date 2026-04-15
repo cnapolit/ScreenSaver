@@ -1,20 +1,17 @@
-﻿using Playnite.SDK.Models;
-using System;
-using System.Collections.Generic;
+﻿using Playnite;
 
-namespace ScreenSaver.Models
+namespace ScreenSaver.Models;
+
+internal class GameGroup
 {
-    internal class GameGroup
-    {
-        public string Name { get; set; }
-        public bool IsActive { get; set; }
-        public bool Ascending { get; set; }
-        public string SortField { get; set; }
-        public FilterPreset Filter { get; set; }
-        public ISet<Guid> GameGuids { get; set; } = new HashSet<Guid>();
+    public required string Name { get; set; }
+    public bool IsActive { get; set; }
+    public bool Ascending { get; set; }
+    public string? SortField { get; set; }
+    public FilteringConfiguration? Filter { get; set; }
+    public ISet<string> GameGuids { get; set; } = new HashSet<string>();
 
-        //public DateTime StartTime { get; set; }
-        //public DateTime EndTime { get; set; }
-        //public ISet<Guid> GuidBlackList { get; set; }
-    }
+    //public DateTime StartTime { get; set; }
+    //public DateTime EndTime { get; set; }
+    //public ISet<Guid> GuidBlackList { get; set; }
 }

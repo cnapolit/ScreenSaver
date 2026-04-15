@@ -1,56 +1,112 @@
-﻿using Playnite.SDK;
-using Playnite.SDK.Events;
-using Playnite.SDK.Plugins;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Windows.Controls;
-using ScreenSaver.Services.State.ScreenSaver;
-using ScreenSaver.Services.UI.Menus;
+﻿using Playnite;
+using ScreenSaver.Common.Constants;
 using ScreenSaver.Services;
-using ScreenSaver.Models;
+using ScreenSaver.Services.State.Poll;
+using ScreenSaver.Services.State.ScreenSaver;
+using ScreenSaver.Services.State.Settings;
+using ScreenSaver.Services.UI.Menus;
+using ScreenSaver.Services.UI.Windows;
 using ScreenSaver.Views.Models;
-using ScreenSaver.Views.Layouts.ScreenSaverSettings;
+namespace ScreenSaver;
 
-namespace ScreenSaver
+public class ScreenSaverPlugin : Plugin
 {
-    public class ScreenSaverPlugin : GenericPlugin, IScreenSaverSettings
+    #region Infrastructure
+
+    public const string Id = "cnapolit.ScreenSaver";
+
+#pragma warning disable CA1859 // Use concrete types when possible for improved performance
+    private IMenuManager?               _menuManager;
+    private IGameGroupManager?     _gameGroupManager;
+    private IScreenSaverManager? _screenSaverManager;
+    private IPollManager?               _pollManager;
+    private ISettingsService?       _settingsService;
+#pragma warning restore CA1859 // Use concrete types when possible for improved performance
+
+    #endregion
+
+    #region Playnite Interface
+
+    public override async Task OnGameStartingAsync(OnGameStartingEventArgs _)
     {
-        #region Infrastructure
-
-        private ScreenSaverSettingsViewModel SettingsViewModel { get; set; }
-
-        private readonly IMenuManager               _menuManager;
-        private readonly IGameGroupManager     _gameGroupManager;
-        private readonly IScreenSaverManager _screenSaverManager;
-
-        public ScreenSaverPlugin(IPlayniteAPI api) : base(api)
-        {
-            Properties          = new GenericPluginProperties      {                 HasSettings = true                 };
-            SettingsViewModel   = new ScreenSaverSettingsViewModel (                                                this);
-            _gameGroupManager   = new GameGroupManager             (                        api.Paths.ExtensionsDataPath);
-            _screenSaverManager = new ScreenSaverManager           (api, _gameGroupManager,   SettingsViewModel.Settings);
-            _menuManager        = new MenuManager                  (api, _gameGroupManager,          _screenSaverManager);
-
-            PlayniteApi.Database.Games.ItemCollectionChanged +=
-                (_, args) => _gameGroupManager.RemoveGamesFromGroups(args.RemovedItems.Select(g => g.Id));
-        }
-
-        #endregion
-
-        #region Playnite Interface
-
-        public override Guid Id { get; } = Guid.Parse(Common.Constants.App.Id);
-        public override ISettings                 GetSettings          (bool           firstRunSettings) => SettingsViewModel;
-        public override UserControl               GetSettingsView      (bool           firstRunSettings) => new ScreenSaverSettingsView();
-        public override void                      OnGameStarting       (OnGameStartingEventArgs       _) => _screenSaverManager. PausePolling     (false, true);
-        public override void                      OnGameStopped        (OnGameStoppedEventArgs        _) => _screenSaverManager. StartPolling     (false, true);
-        public override void                      OnApplicationStarted (OnApplicationStartedEventArgs _) => _screenSaverManager. SetupPolling     (           );
-        public override void                      OnApplicationStopped (OnApplicationStoppedEventArgs _) => _screenSaverManager. StopPolling      (           );
-        public override IEnumerable<GameMenuItem> GetGameMenuItems     (GetGameMenuItemsArgs          _) => _menuManager.        GetGameMenuItems (           );
-        public override IEnumerable<MainMenuItem> GetMainMenuItems     (GetMainMenuItemsArgs          _) => _menuManager.        GetMainMenuItems (           );
-        public          void                      UpdateSettings       (ScreenSaverSettings    settings) => _screenSaverManager. UpdateSettings   (   settings);
-
-        #endregion
+        await Task.CompletedTask;
+        _screenSaverManager?.PausePolling(false, true);
     }
+
+    public override async Task OnGameStoppedAsync(OnGameStoppedEventArgs _)
+    {
+        await Task.CompletedTask;
+        _screenSaverManager?.StartPolling(false, true);
+    }
+
+    public override async Task OnApplicationStartupAsync(OnApplicationStartupArgs _)
+    {
+        await Task.CompletedTask;
+        _screenSaverManager?.SetupPolling();
+    }
+
+    public override async Task OnApplicationShutdownAsync(OnApplicationShutdownArgs args)
+    {
+        await Task.CompletedTask;
+        _screenSaverManager?.StopPolling();
+    }
+
+    public override async Task OnGameCollectionChange(DataCollectionChangeArgs<Game> args)
+    {
+        await Task.CompletedTask;
+        var removedItems = args.RemovedItems ?? [];
+        _gameGroupManager?.RemoveGamesFromGroups(removedItems.Select(g => g.Id));
+    }
+
+    public override async Task OnGamepadConnectedAsync(OnGamepadConnectedArgs args)
+    {
+        await Task.CompletedTask;
+        _pollManager?.OnButtonPress();
+    }
+
+    public override async Task OnGamepadButtonStateChangedAsync(OnGamepadButtonStateChangedArgs args)
+    {
+        await Task.CompletedTask;
+        _pollManager?.OnButtonPress();
+    }
+
+    public override ICollection<MenuItemImpl>? GetGameMenuItems(GetGameMenuItemsArgs args)
+        => _menuManager?.GetGameMenuItems(args) ?? throw new InvalidOperationException("InitializeAsync not invoked");
+
+    public override ICollection<MenuItemImpl>? GetAppMenuItems(GetAppMenuItemsArgs args)
+        => _menuManager?.GetMainMenuItems(args);
+
+    public override ICollection<MenuItemDescriptor>? GetAppMenuItemDescriptors(GetAppMenuItemDescriptorsArgs args)
+        => _menuManager?.GetAppMenuItemDescriptors(args);
+
+    public override ICollection<MenuItemDescriptor> GetGameMenuItemDescriptors(GetGameMenuItemDescriptorsArgs args)
+        => _menuManager?.GetGameMenuItemDescriptors(args) ?? throw new InvalidOperationException("InitializeAsync not invoked");
+
+    public override async Task InitializeAsync(InitializeArgs args)
+    {
+        await Task.CompletedTask;
+        Resource.Api = args.Api;
+        Loc.Api = args.Api;
+        _settingsService = new SettingsService(args.Api);
+        var settingsRef = await _settingsService.GetSettingsReferenceAsync();
+        var soundsLoaded = args.Api.Addons.Plugins.Any(p => p.Id == App.Sounds);
+        var gameContentFactory = new GameContentFactory(args.Api) { SettingsRef = settingsRef };
+        _gameGroupManager = new GameGroupManager(args.Api.AppInfo.ExtensionsDataDirectory);
+        var windowsManager = new WindowsManager(args.Api, _gameGroupManager, gameContentFactory) { SettingsRef = settingsRef };
+        _pollManager = new PollManager(windowsManager, soundsLoaded) { SettingsRef = settingsRef };
+        _screenSaverManager = new ScreenSaverManager(args.Api, windowsManager, _pollManager, soundsLoaded) { SettingsRef = settingsRef };
+        _menuManager = new MenuManager(args.Api, _gameGroupManager, _screenSaverManager);
+    }
+
+    public override async Task<PluginSettingsHandler?> GetSettingsHandlerAsync(GetSettingsHandlerArgs args)
+    {
+        await Task.CompletedTask;
+        if (_settingsService is null || _screenSaverManager is null)
+        {
+            throw new InvalidOperationException("InitializeAsync not invoked");
+        }
+        return new ScreenSaverSettingsHandler(_settingsService, _screenSaverManager);
+    }
+
+    #endregion
 }

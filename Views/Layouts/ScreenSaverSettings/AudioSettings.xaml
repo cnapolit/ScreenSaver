@@ -6,7 +6,8 @@
              mc:Ignorable="d"
              xmlns:s="clr-namespace:ScreenSaver.Views.Models"
              xmlns:c="clr-namespace:ScreenSaver.Services.UI.Converters"
-             d:DataContext="{d:DesignInstance Type=s:ScreenSaverSettingsViewModel}"
+             xmlns:p="clr-namespace:Playnite"
+             d:DataContext="{d:DesignInstance Type=s:ScreenSaverSettingsHandler}"
              d:DesignHeight="460">
     <Grid>
         <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
@@ -21,17 +22,17 @@
             <RowDefinition Height="5"/>
             <RowDefinition/>
         </Grid.RowDefinitions>
-        <CheckBox Grid.Row="0" Grid.ColumnSpan="2" Name="CheckMusicSkip"  IsChecked="{Binding Settings.MusicSkip}"  Content="{DynamicResource SETTINGS_MUSIC_SKIP}"
+        <CheckBox Grid.Row="0" Grid.ColumnSpan="2" Name="CheckMusicSkip"  IsChecked="{Binding Settings.MusicSkip}"  Content="{p:LocalizedString {x:Static p:LocId.settings_music_skip}}"
                   IsEnabled="{Binding ElementName=MusicItem, Path=IsSelected}"/>
-        <CheckBox Grid.Row="2" Grid.ColumnSpan="2" Name="CheckPlayBackup" IsChecked="{Binding Settings.PlayBackup}" Content="{DynamicResource SETTINGS_PLAY_BACKUP}"/>
-        <Label    Grid.Row="4"                     Name="AudioSourceLabel" Content="{DynamicResource SETTINGS_AUDIO_SOURCE}" d:LayoutOverrides="VerticalAlignment"/>
+        <CheckBox Grid.Row="2" Grid.ColumnSpan="2" Name="CheckPlayBackup" IsChecked="{Binding Settings.PlayBackup}" Content="{p:LocalizedString {x:Static p:LocId.settings_play_backup}}"/>
+        <Label    Grid.Row="4"                     Name="AudioSourceLabel" Content="{p:LocalizedString {x:Static p:LocId.settings_audio_source}}" d:LayoutOverrides="VerticalAlignment"/>
         <ComboBox Grid.Row="4" Grid.Column="1"     Name="AudioSourceCombo" SelectedIndex="{Binding Settings.AudioSource, Converter={c:AudioSourceConverter}}" Height="20">
-            <ComboBoxItem Content="{DynamicResource SETTINGS_ENUM_AUDIO_SOURCE_NONE}"/>
-            <ComboBoxItem Content="{DynamicResource SETTINGS_ENUM_AUDIO_SOURCE_VIDEO}"/>
-            <ComboBoxItem Content="{DynamicResource SETTINGS_ENUM_AUDIO_SOURCE_MUSIC}" Name="MusicItem"/>
+            <ComboBoxItem Content="{p:LocalizedString {x:Static p:LocId.settings_enum_audio_source_none}}"/>
+            <ComboBoxItem Content="{p:LocalizedString {x:Static p:LocId.settings_enum_audio_source_video}}"/>
+            <ComboBoxItem Content="{p:LocalizedString {x:Static p:LocId.settings_enum_audio_source_music}}" Name="MusicItem"/>
         </ComboBox>
         <StackPanel Grid.Row="6" Orientation="Horizontal">
-            <Label Name="LblMusicVolume" Content="{DynamicResource SETTINGS_AUDIO_VOLUME}" d:LayoutOverrides="VerticalAlignment"/>
+            <Label Name="LblMusicVolume" Content="{p:LocalizedString {x:Static p:LocId.settings_audio_volume}}" d:LayoutOverrides="VerticalAlignment"/>
             <Label Name="LblSpace"       Content=" "/>
             <Label Name="Percentage"     Content="{Binding Settings.Volume}" />
             <Label Name="PercentageSign" Content="%"/>

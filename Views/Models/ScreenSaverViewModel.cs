@@ -1,92 +1,84 @@
-﻿using ScreenSaver.Models;
-using System.Collections.Generic;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using ScreenSaver.Models;
 using System.IO;
 
-namespace ScreenSaver
+namespace ScreenSaver;
+
+public class ScreenSaverViewModel : ObservableObject
 {
-    public class ScreenSaverViewModel : ObservableObject
+    public string? BackgroundPath
     {
-        private string screenSaverImagePath = null;
-        public string BackgroundPath
+        get => field;
+        set
         {
-            get => screenSaverImagePath;
-            set
-            {
-                if (!ValidPath(value)) return;
-                screenSaverImagePath = value;
-                OnPropertyChanged();
-            }
+            if (!ValidPath(value)) return;
+            field = value;
+            OnPropertyChanged();
         }
-
-        private string logoPath = null;
-        public string LogoPath
-        {
-            get => logoPath;
-            set
-            {
-                if (!ValidPath(value)) return;
-                logoPath = value;
-                OnPropertyChanged();
-            }
-        }
-
-        private string videoPath = null;
-        public string VideoPath
-        {
-            get => videoPath;
-            set
-            {
-                if (!ValidPath(value)) return;
-                videoPath = value;
-                OnPropertyChanged();
-            }
-        }
-
-        private string musicPath = null;
-        public string MusicPath
-        {
-            get => musicPath;
-            set
-            {
-                if (!ValidPath(value)) return;
-                musicPath = value;
-                OnPropertyChanged();
-            }
-        }
-
-        private string clockText = null;
-        public string ClockText
-        {
-            get => clockText;
-            set
-            {
-                clockText = value;
-                OnPropertyChanged();
-            }
-        }
-
-        private string dateText = null;
-        public string DateText
-        {
-            get => dateText;
-            set
-            {
-                dateText = value;
-                OnPropertyChanged();
-            }
-        }
-
-        private ScreenSaverSettings settings;
-        public ScreenSaverSettings Settings
-        {
-            get => settings;
-            set
-            {
-                settings = value;
-                OnPropertyChanged();
-            }
-        }
-
-        private static bool ValidPath(string value) => !string.IsNullOrWhiteSpace(value) && File.Exists(value);
     }
+
+    public string? LogoPath
+    {
+        get => field;
+        set
+        {
+            if (!ValidPath(value)) return;
+            field = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public string? VideoPath
+    {
+        get => field;
+        set
+        {
+            if (!ValidPath(value)) return;
+            field = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public string? MusicPath
+    {
+        get => field;
+        set
+        {
+            if (!ValidPath(value)) return;
+            field = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public string? ClockText
+    {
+        get => field;
+        set
+        {
+            field = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public string? DateText
+    {
+        get => field;
+        set
+        {
+            field = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public ScreenSaverSettings? Settings
+    {
+        get => field;
+        set
+        {
+            field = value;
+            OnPropertyChanged();
+        }
+    }
+
+    private static bool ValidPath(string? value) => !string.IsNullOrWhiteSpace(value) && File.Exists(value);
 }

@@ -1,7 +1,6 @@
-﻿namespace ScreenSaver.Common.Constants
+﻿namespace ScreenSaver.Common.Constants;
+
+internal static class Imports
 {
-    internal static class Imports
-    {
-        public const int WH_MOUSE_LL = 14;
-    }
+    public const int WH_MOUSE_LL = 14;
 }

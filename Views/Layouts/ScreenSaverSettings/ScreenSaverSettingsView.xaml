@@ -6,20 +6,21 @@
              mc:Ignorable="d"
              xmlns:l="clr-namespace:ScreenSaver.Views.Layouts.ScreenSaverSettings"
              xmlns:s="clr-namespace:ScreenSaver.Views.Models"
-             d:DataContext="{d:DesignInstance Type=s:ScreenSaverSettingsViewModel}"
+             xmlns:p="clr-namespace:Playnite"
+             d:DataContext="{d:DesignInstance Type=s:ScreenSaverSettingsHandler}"
              d:DesignHeight="460">
     <ScrollViewer>
         <StackPanel Margin="2">
-            <GroupBox Header="{DynamicResource SETTINGS_HEADER_GENERAL}" Margin="0,5,0,0">
+            <GroupBox Header="{p:LocalizedString {x:Static p:LocId.settings_header_general}}" Margin="0,5,0,0">
                 <l:GeneralSettings/>
             </GroupBox>
-            <GroupBox Header="{DynamicResource SETTINGS_HEADER_VIDEO}" Margin="0,5,0,0">
+            <GroupBox Header="{p:LocalizedString {x:Static p:LocId.settings_header_video}}" Margin="0,5,0,0">
                 <l:VideoSettings/>
             </GroupBox>
-            <GroupBox Header="{DynamicResource SETTINGS_HEADER_AUDIO}" Margin="0,5,0,0">
+            <GroupBox Header="{p:LocalizedString {x:Static p:LocId.settings_header_audio}}" Margin="0,5,0,0">
                 <l:AudioSettings/>
             </GroupBox>
-            <GroupBox Header="{DynamicResource SETTINGS_HEADER_ClOCK}" Margin="0,5,0,0">
+            <GroupBox Header="{p:LocalizedString {x:Static p:LocId.settings_header_clock}}" Margin="0,5,0,0">
                 <l:ClockSettings/>
             </GroupBox>
         </StackPanel>

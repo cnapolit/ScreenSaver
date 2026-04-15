@@ -6,7 +6,8 @@
              mc:Ignorable="d"
              xmlns:l="clr-namespace:ScreenSaver.Views.Layouts.ScreenSaverSettings"
              xmlns:s="clr-namespace:ScreenSaver.Views.Models"
-             d:DataContext="{d:DesignInstance Type=s:ScreenSaverSettingsViewModel}"
+             xmlns:p="clr-namespace:Playnite"
+             d:DataContext="{d:DesignInstance Type=s:ScreenSaverSettingsHandler}"
              d:DesignHeight="460">
     <Grid>
         <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
@@ -23,21 +24,21 @@
             <RowDefinition Height="5"/>
             <RowDefinition/>
         </Grid.RowDefinitions>
-        <CheckBox  Grid.Row="0"  Grid.ColumnSpan="2"   Name="CheckDisplayClock" Content="{DynamicResource SETTINGS_DISPLAY_CLOCK}" IsChecked="{Binding Settings.DisplayClock}"/>
+        <CheckBox  Grid.Row="0"  Grid.ColumnSpan="2"   Name="CheckDisplayClock" Content="{p:LocalizedString {x:Static p:LocId.settings_display_clock}}" IsChecked="{Binding Settings.DisplayClock}"/>
         <StackPanel Grid.Row="2" Grid.ColumnSpan="2" Orientation="Horizontal">
             <l:UIntDUp Value="{Binding Settings.ClockCornerRadius}" HorizontalAlignment="Left"  Margin="0 0 5 0"/>
-            <Label     Content="{DynamicResource SETTINGS_CLOCK_CORNER}"  HorizontalAlignment="Left"/>
+            <Label     Content="{p:LocalizedString {x:Static p:LocId.settings_clock_corner}}"  HorizontalAlignment="Left"/>
         </StackPanel>
         <StackPanel Grid.Row="4" Grid.ColumnSpan="2" Orientation="Horizontal">
             <l:UIntDUp Value="{Binding Settings.ClockFontSize}" HorizontalAlignment="Left"  Margin="0 0 5 0"/>
-            <Label     Content="{DynamicResource SETTINGS_CLOCK_FONT_SIZE}"  HorizontalAlignment="Left"/>
+            <Label     Content="{p:LocalizedString {x:Static p:LocId.settings_clock_font_size}}"  HorizontalAlignment="Left"/>
         </StackPanel>
         <StackPanel Grid.Row="6" Grid.ColumnSpan="2" Orientation="Horizontal">
             <l:UIntDUp Value="{Binding Settings.ClockSubFontSize}" HorizontalAlignment="Left"  Margin="0 0 5 0"/>
-            <Label     Content="{DynamicResource SETTINGS_CLOCK_SUB_FONT_SIZE}"  HorizontalAlignment="Left"/>
+            <Label     Content="{p:LocalizedString {x:Static p:LocId.settings_clock_sub_font_size}}"  HorizontalAlignment="Left"/>
         </StackPanel>
         <DockPanel Grid.Row="8"  Grid.ColumnSpan="2" Margin="0,0,0,10">
-            <TextBlock Text="{DynamicResource SETTINGS_CLOCK_FONT}" DockPanel.Dock="Left" VerticalAlignment="Center"/>
+            <TextBlock Text="{p:LocalizedString {x:Static p:LocId.settings_clock_font}}" DockPanel.Dock="Left" VerticalAlignment="Center"/>
             <TextBox   Text="{Binding Settings.ClockFont}" Margin="10,0,0,0" />
         </DockPanel>
     </Grid>

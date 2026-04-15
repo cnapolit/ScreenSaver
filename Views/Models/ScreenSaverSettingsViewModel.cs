@@ -1,62 +1,45 @@
-﻿using Playnite.SDK;
-using Playnite.SDK.Data;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using Playnite;
 using ScreenSaver.Models;
-using System.Collections.Generic;
+using ScreenSaver.Services.State.ScreenSaver;
+using ScreenSaver.Services.State.Settings;
+using ScreenSaver.Views.Layouts.ScreenSaverSettings;
+using System.IO;
+using System.Text.Json;
+using System.Windows;
 
-namespace ScreenSaver.Views.Models
+namespace ScreenSaver.Views.Models;
+
+[INotifyPropertyChanged]
+internal partial class ScreenSaverSettingsHandler(
+    ISettingsService settingsService, IScreenSaverManager screenSaverManager) : PluginSettingsHandler
 {
-    public class ScreenSaverSettingsViewModel : ObservableObject, ISettings
+    private ScreenSaverSettings? EditingClone { get; set; }
+    private ISettingsRef? _settingsRef;
+    public ScreenSaverSettings? Settings => _settingsRef?.Settings;
+
+    public override FrameworkElement GetEditView(GetSettingsViewArgs args) => new ScreenSaverSettingsView { DataContext = this };
+
+    public override async Task BeginEditAsync(BeginEditArgs args)
     {
-        private readonly ScreenSaverPlugin plugin;
-        private ScreenSaverSettings EditingClone { get; set; }
+        _settingsRef = await settingsService.GetSettingsReferenceAsync();
+        using MemoryStream stream = new();
+        await JsonSerializer.SerializeAsync(stream, Settings);
+        stream.Position = 0;
+        EditingClone = await JsonSerializer.DeserializeAsync<ScreenSaverSettings>(stream);
+    }
 
-        private ScreenSaverSettings settings;
-        public ScreenSaverSettings Settings
-        {
-            get => settings;
-            set
-            {
-                settings = value;
-                OnPropertyChanged();
-            }
-        }
+    public override async Task CancelEditAsync(CancelEditArgs args) => settingsService.UpdateSettingsAsync(EditingClone!);
 
-        public ScreenSaverSettingsViewModel(ScreenSaverPlugin plugin)
-        {
-            this.plugin = plugin;
+    public override async Task EndEditAsync(EndEditArgs args)
+    {
+        await settingsService.SaveSettingsAsync();
+        screenSaverManager.UpdatePollState();
+    }
 
-            var savedSettings = plugin.LoadPluginSettings<ScreenSaverSettings>();
-
-            if (savedSettings is null)
-            {
-                Settings = new ScreenSaverSettings();
-            }
-            else
-            {
-                Settings = savedSettings;
-            }
-        }
-
-        public void BeginEdit()
-        {
-            EditingClone = Serialization.GetClone(Settings);
-        }
-
-        public void CancelEdit()
-        {
-            Settings = EditingClone;
-        }
-
-        public void EndEdit()
-        {
-            plugin. SavePluginSettings (Settings);
-            plugin.     UpdateSettings (Settings);
-        }
-
-        public bool VerifySettings(out List<string> errors)
-        {
-            errors = new List<string>();
-            return true;
-        }
+    public override async Task<ICollection<string>> VerifySettingsAsync(VerifySettingsArgs args)
+    {
+        await Task.CompletedTask;
+        return [];
     }
 }

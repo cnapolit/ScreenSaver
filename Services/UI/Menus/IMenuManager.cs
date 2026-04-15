@@ -1,11 +1,12 @@
-﻿using Playnite.SDK.Plugins;
-using System.Collections.Generic;
+﻿using Playnite;
+using static Playnite.Plugin;
 
-namespace ScreenSaver.Services.UI.Menus
+namespace ScreenSaver.Services.UI.Menus;
+
+internal interface IMenuManager
 {
-    internal interface IMenuManager
-    {
-        IEnumerable<GameMenuItem> GetGameMenuItems();
-        IEnumerable<MainMenuItem> GetMainMenuItems();
-    }
+    ICollection<MenuItemImpl> GetGameMenuItems(GetGameMenuItemsArgs args);
+    ICollection<MenuItemImpl> GetMainMenuItems(GetAppMenuItemsArgs args);
+    ICollection<MenuItemDescriptor>? GetAppMenuItemDescriptors(GetAppMenuItemDescriptorsArgs args);
+    ICollection<MenuItemDescriptor> GetGameMenuItemDescriptors(GetGameMenuItemDescriptorsArgs args);
 }

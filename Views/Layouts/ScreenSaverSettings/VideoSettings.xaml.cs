@@ -1,12 +1,11 @@
 ﻿using System.Windows.Controls;
 
-namespace ScreenSaver.Views.Layouts.ScreenSaverSettings
+namespace ScreenSaver.Views.Layouts.ScreenSaverSettings;
+
+/// <summary>
+/// Interaction logic for Video.xaml
+/// </summary>
+public partial class VideoSettings : UserControl
 {
-    /// <summary>
-    /// Interaction logic for Video.xaml
-    /// </summary>
-    public partial class VideoSettings : UserControl
-    {
-        public VideoSettings() => InitializeComponent();
-    }
+    public VideoSettings() => InitializeComponent();
 }

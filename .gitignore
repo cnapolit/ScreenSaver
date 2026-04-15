@@ -1,19 +1,4 @@
-﻿################################################################################
-# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
-################################################################################
-
-/.vs/ScreenSaver
-/bin/Debug
-/obj/Debug
-/packages/PlayniteSDK.6.2.2
-/ScreenSaver.csproj.user
-/packages/Extended.Wpf.Toolkit.4.3.0
-/bin/Full Debug
-/obj/Full Debug
-/packages
-/bin/Release
-/obj/Release
-/Playnite
-/release
-/.vs/ScreenSaver.csproj.dtbcache.json
-*.DS_Store
+﻿.*
+/bin/
+/obj/
+/Properties/launchSettings.json

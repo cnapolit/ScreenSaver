@@ -1,10 +1,9 @@
-﻿namespace ScreenSaver.Models.Enums
+﻿namespace ScreenSaver.Models.Enums;
+
+public enum PlayState
 {
-    public enum PlayState
-    {
-        Never,
-        Desktop,
-        FullScreen,
-        Always
-    }
+    Never,
+    Desktop,
+    FullScreen,
+    Always
 }

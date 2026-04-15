@@ -1,9 +1,8 @@
-﻿namespace ScreenSaver.Models.Enums
+﻿namespace ScreenSaver.Models.Enums;
+
+public enum AudioSource
 {
-    public enum AudioSource
-    {
-        None,
-        Video,
-        Music
-    }
+    None,
+    Video,
+    Music
 }

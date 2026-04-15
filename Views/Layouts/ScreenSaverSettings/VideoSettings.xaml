@@ -6,7 +6,8 @@
              xmlns:l="clr-namespace:ScreenSaver.Views.Layouts.ScreenSaverSettings"
              mc:Ignorable="d" 
              xmlns:s="clr-namespace:ScreenSaver.Views.Models"
-             d:DataContext="{d:DesignInstance Type=s:ScreenSaverSettingsViewModel}"
+             xmlns:p="clr-namespace:Playnite"
+             d:DataContext="{d:DesignInstance Type=s:ScreenSaverSettingsHandler}"
              d:DesignHeight="460">
     <Grid>
         <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
@@ -27,22 +28,22 @@
         </Grid.RowDefinitions>
         <CheckBox Grid.Row="0" Grid.ColumnSpan="2" Name="CheckDisplayVideo"
                   IsChecked="{Binding Settings.DisplayVideo}"
-                  Content="{DynamicResource SETTINGS_DISPLAY_VIDEO}"/>
+                  Content="{p:LocalizedString {x:Static p:LocId.settings_display_video}}"/>
         <CheckBox Grid.Row="2" Grid.ColumnSpan="2" Name="CheckVideoSkip"
                   IsChecked="{Binding Settings.VideoSkip}"
-                  Content="{DynamicResource SETTINGS_VIDEO_SKIP}"
+                  Content="{p:LocalizedString {x:Static p:LocId.settings_video_skip}}"
                   IsEnabled="{Binding ElementName=CheckDisplayVideo, Path=IsChecked}"/>
         <CheckBox Grid.Row="4" Grid.ColumnSpan="2" Name="CheckMicro"
                   IsChecked="{Binding Settings.UseMicroTrailer}"
-                  Content="{DynamicResource SETTINGS_USE_MICRO}"
+                  Content="{p:LocalizedString {x:Static p:LocId.settings_use_micro}}"
                   IsEnabled="{Binding ElementName=CheckDisplayVideo, Path=IsChecked}"/>
         <CheckBox Grid.Row="6" Grid.ColumnSpan="2" Name="CheckVideoBackup"
                   IsChecked="{Binding Settings.VideoBackup}"
-                  Content="{DynamicResource SETTINGS_VIDEO_BACKUP}"
+                  Content="{p:LocalizedString {x:Static p:LocId.settings_video_backup}}"
                   IsEnabled="{Binding ElementName=CheckDisplayVideo, Path=IsChecked}"/>
         <StackPanel Grid.Row="8" Grid.ColumnSpan="2" Orientation="Horizontal">
             <l:UIntDUp Value="{Binding Settings.VideoCornerRadius}" HorizontalAlignment="Left"  Margin="0 0 5 0"/>
-            <Label     Content="{DynamicResource SETTINGS_VIDEO_CORNER}"  HorizontalAlignment="Left"/>
+            <Label     Content="{p:LocalizedString {x:Static p:LocId.settings_video_corner}}"  HorizontalAlignment="Left"/>
         </StackPanel>
     </Grid>
 </UserControl>

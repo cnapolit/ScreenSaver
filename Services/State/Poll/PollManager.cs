@@ -1,314 +1,234 @@
-﻿using Playnite.SDK;
-using ScreenSaver.Common.Constants;
+﻿using ScreenSaver.Common.Constants;
 using ScreenSaver.Services.UI.Windows;
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Threading.Tasks;
 using System.Windows;
 using ScreenSaver.Common.Imports;
-using ScreenSaver.Models;
 using static ScreenSaver.Common.Imports.User32;
-using static SDL2.SDL;
-using Keys = System.Windows.Forms.Keys;
+using Playnite;
+using ScreenSaver.Services.State.Settings;
 
-namespace ScreenSaver.Services.State.Poll
+namespace ScreenSaver.Services.State.Poll;
+
+internal class PollManager(IWindowsManager screenSaverManager, bool soundsLoaded) : SettingsConsumer, IPollManager
 {
-    internal class PollManager : IPollManager
+    #region Infrastructure
+
+    #region Variables
+
+    private static readonly ILogger _logger  = LogManager.GetLogger();
+
+    private static          IntPtr                                         _hookID;
+
+    private static          Task?                                 _screenSaverTask;
+
+    private static          int                            _lastInputTimeStampInMs;
+    private static          int                     _lastScreenChangeTimeStampInMs;
+    private static readonly List<Keys>                                       _keys = Enum.GetValues(typeof(Keys)).Cast<Keys>().ToList();
+    private        readonly Dictionary<Keys, bool>                      _keyStates = _keys.ToDictionary(k => k, _ => false);
+    private bool                                                        _isPolling;
+    private                 int?                                   _timeSinceStart;
+
+    #endregion
+
+    #endregion
+
+    #region Interface
+
+    public void SetupPolling      (                            ) =>  Setup  (           );
+    public void StartPolling      (bool             immediately) =>  Start  (immediately);
+    public void PausePolling      (                            ) =>  Pause  (           );
+    public void StopPolling       (                            ) =>   Stop  (           );
+
+    #endregion
+
+    #region Implementation
+
+    #region SetupPolling
+
+    private static void Setup() => _hookID = SetHook(_proc);
+
+    private static readonly LowLevelMouseProc _proc = (nCode, wParam, lParam) =>
     {
-        #region Infrastructure
-
-        #region Variables
-
-        private static readonly ILogger     _logger  =                                         LogManager.GetLogger();
-        private static readonly Keys[]      _badKeys = new[] { Keys.KeyCode, Keys.Modifiers, Keys.None, Keys.Packet };
-        private static readonly IList<Keys> _keys   = Enum.
-            GetValues(typeof(Keys)).
-            Cast<Keys>().
-            Where(k => !_badKeys.Contains(k)).
-            ToList();
-
-        private static          IntPtr                                         _hookID;
-
-        private static          Task                                  _screenSaverTask;
-
-        private static          int                            _lastInputTimeStampInMs;
-        private static          int                     _lastScreenChangeTimeStampInMs;
-        private        readonly bool                                     _soundsLoaded;
-        private        readonly IDictionary<Keys, bool>                     _keyStates;
-        private        readonly IWindowsManager                    _screenSaverManager;
-
-        private                 bool                                        _isPolling;
-        private                 int?                                   _timeSinceStart;
-        private                 uint                                 _gameIntervalInMs;
-        private                 uint                          _screenSaverIntervalInMs;
-
-        private                 ScreenSaverSettings                          _settings;
-
-        #endregion
-
-        public PollManager(ScreenSaverSettings settings, IWindowsManager screenSaverManager, bool soundsLoaded)
+        if (nCode >= 0)
         {
-            Update(settings); 
-            _screenSaverManager = screenSaverManager;
-            _soundsLoaded = soundsLoaded;
-
-            // I'm too lazy to type this out. Besides, what if it changes ¯\_(ツ)_/¯
-            _keyStates = new Dictionary<Keys, bool>();
-            foreach (var key in _keys) _keyStates[key] = false;
+            _lastInputTimeStampInMs = Environment.TickCount;
         }
+        return CallNextHookEx(_hookID, nCode, wParam, lParam);
+    };
 
-        #endregion
-
-        #region Interface
-
-        public void SetupPolling      (                            ) =>  Setup  (           );
-        public void StartPolling      (bool             immediately) =>  Start  (immediately);
-        public void PausePolling      (                            ) =>  Pause  (           );
-        public void StopPolling       (                            ) =>   Stop  (           );
-        public void UpdateSettings    (ScreenSaverSettings settings) =>  Update (   settings);
-
-        #endregion
-
-        #region Implementation
-
-        #region SetupPolling
-
-        private static void Setup()
+    private static IntPtr SetHook(LowLevelMouseProc proc)
+    {
+        using var curProcess = Process.GetCurrentProcess();
+        if (curProcess.MainModule is null)
         {
-            _hookID = SetHook(_proc);
-            SDL_Init(SDL_INIT_GAMECONTROLLER | SDL_INIT_JOYSTICK);
+            return IntPtr.Zero;
         }
+        using var curModule = curProcess.MainModule;
+        return SetWindowsHookEx(Imports.WH_MOUSE_LL, proc, Kernel32.GetModuleHandle(curModule.ModuleName), 0);
+    }
 
-        private static readonly LowLevelMouseProc _proc = (nCode, wParam, lParam) =>
+    #endregion
+
+    #region StartPolling
+
+    private void Start(bool startImmediately)
+    {
+        switch (_screenSaverTask?.Status)
         {
-            if (nCode >= 0)
+            case null:
+            case TaskStatus.RanToCompletion:
+                _isPolling = true;
+                _screenSaverTask = PollForInputAsync(startImmediately);
+                break;
+            case TaskStatus.Created:
+            case TaskStatus.Running:
+            case TaskStatus.WaitingToRun:
+            case TaskStatus.WaitingForActivation:
+                if (startImmediately)
+                {
+                    _timeSinceStart = Environment.TickCount + 100;
+                    _lastScreenChangeTimeStampInMs = Environment.TickCount;
+                    screenSaverManager.StartScreenSaverAsync();
+                }
+                break;
+            default:
+                _logger.Warn($"ScreenSaver Task was in an unexpected state: {_screenSaverTask.Status}");
+                break;
+        }
+    }
+
+    // TODO: Replace with debounce logic
+    private async Task PollForInputAsync(bool startImmediately) 
+    { 
+        try                 { await PollLoop(startImmediately); } 
+        catch (Exception e) { _logger.Error(e, "Something Went Wrong while running ScreenSaver Poll."); }
+    }
+
+
+    private async Task PollLoop(bool startImediately)
+    {
+        _lastScreenChangeTimeStampInMs = 0;
+        _lastInputTimeStampInMs = startImediately ? 0 : Environment.TickCount;
+        DateTime time = default;
+        while (_isPolling)
+        {
+            UpdateScreenSaverState(ref time);
+
+            // don't need to be as responsive if the screen saver is not visible
+            await Task.Delay(_timeSinceStart is null ? 1000 : 100);
+
+            var aKeyStateChanged = AKeyStateChanged();
+
+            if (aKeyStateChanged)
             {
                 _lastInputTimeStampInMs = Environment.TickCount;
             }
-            return CallNextHookEx(_hookID, nCode, wParam, lParam);
-        };
-
-        private static IntPtr SetHook(LowLevelMouseProc proc)
-        {
-            using (var curProcess = Process.GetCurrentProcess())
-            using (var curModule = curProcess.MainModule)
-            return SetWindowsHookEx(Imports.WH_MOUSE_LL, proc, Kernel32.GetModuleHandle(curModule.ModuleName), 0);
         }
-
-        #endregion
-
-        #region StartPolling
-
-        private void Start(bool startImmediately)
-        {
-            switch (_screenSaverTask?.Status)
-            {
-                case null:
-                case TaskStatus.RanToCompletion:
-                    _isPolling = true;
-                    _screenSaverTask = PollForInput(startImmediately);
-                    break;
-                case TaskStatus.Created:
-                case TaskStatus.Running:
-                case TaskStatus.WaitingToRun:
-                case TaskStatus.WaitingForActivation:
-                    if (startImmediately)
-                    {
-                        _timeSinceStart = Environment.TickCount + 100;
-                        _lastScreenChangeTimeStampInMs = Environment.TickCount;
-                        _screenSaverManager.StartScreenSaver();
-                    }
-                    break;
-                default:
-                    _logger.Warn($"ScreenSaver Task was in an unexpected state: {_screenSaverTask.Status}");
-                    break;
-            }
-        }
-
-        // I would rather rely on a timer, but that isn't ideal until a event handler for controllers available.
-        // Otherwise, we would still need to poll for gamepad input to close the screen saver
-        // and I'm not polling and managing a timer together.
-        private async Task PollForInput(bool startImmediately) 
-        { 
-            try                 { await PollLoop(startImmediately); } 
-            catch (Exception e) { _logger.Error(e, "Something Went Wrong while running ScreenSaver Poll."); }
-        }
-
-
-        private async Task PollLoop(bool startImediately)
-        {
-            var controllers = GetControllers();
-            _lastScreenChangeTimeStampInMs = 0;
-            _lastInputTimeStampInMs = startImediately ? 0 : Environment.TickCount;
-            DateTime time = default;
-            while (_isPolling)
-            {
-                UpdateScreenSaverState(ref time);
-
-                // don't need to be as responsive if the screen saver is not visible
-                await Task.Delay(_timeSinceStart is null ? 1000 : 100);
-
-                var aKeyStateChanged = AKeyStateChanged();
-                var aControllerChanged = AControllerChanged(controllers);
-
-                if (aKeyStateChanged || aControllerChanged)
-                {
-                    _lastInputTimeStampInMs = Environment.TickCount;
-                }
-            }
-        }
-
-        private void UpdateScreenSaverState(ref DateTime time)
-        {
-            var screenSaverIsNotRunning = _timeSinceStart is null;
-
-            if (screenSaverIsNotRunning && TimeToStart)
-            {
-                Process process = null;
-                if (_soundsLoaded)
-                {
-                    process = Process.Start(App.SoundsUriPause);
-                }
-
-                Application.Current.Dispatcher.Invoke(_screenSaverManager.StartScreenSaver);
-                _timeSinceStart = Environment.TickCount + 100;
-                _lastScreenChangeTimeStampInMs = Environment.TickCount;
-                time = DateTime.Now;
-
-                if (_soundsLoaded)
-                {
-                    process.WaitForExit();
-                    process.Dispose();
-                }
-                
-            }
-            else if (_lastInputTimeStampInMs > _timeSinceStart)
-            {
-                Process process = null;
-                if (_soundsLoaded)
-                {
-                    process = Process.Start(App.SoundsUriPlay);
-                }
-                _timeSinceStart = null;
-                Application.Current.Dispatcher.InvokeAsync(_screenSaverManager.StopScreenSaver);
-
-                if (_soundsLoaded)
-                {
-                    process.WaitForExit();
-                    process.Dispose();
-                }
-            }
-            else if (!screenSaverIsNotRunning && TimeToUpdate)
-            {
-                _lastScreenChangeTimeStampInMs = Environment.TickCount;
-                Application.Current.Dispatcher.Invoke(_screenSaverManager.UpdateScreenSaver);
-                time = DateTime.Now;
-            }
-
-            var currentTime = DateTime.Now;
-            if (currentTime.Second is 0 && currentTime - time > TimeSpan.FromMinutes(1))
-            {
-                time = DateTime.Now;
-                Application.Current.Dispatcher.Invoke(_screenSaverManager.UpdateScreenSaverTime);
-            }
-        }
-
-        private bool  TimeToStart => Environment.TickCount -        _lastInputTimeStampInMs > _screenSaverIntervalInMs;
-        private bool TimeToUpdate => Environment.TickCount - _lastScreenChangeTimeStampInMs >        _gameIntervalInMs;
-
-        // A keyboard hook would be better, but not necessary until we can find an event or hook for controllers
-        private bool AKeyStateChanged()
-        {
-            var keyChanged = false;
-
-            foreach (var key in _keys)
-            {
-                var keyState = _keyStates[key];
-                if (IsKeyPushedDown(key) != _keyStates[key])
-                {
-                    _keyStates[key] = !keyState;
-                    keyChanged = true;
-                }
-            }
-
-            return keyChanged;
-        }
-
-        public static bool IsKeyPushedDown(Keys key) => 0 != (GetAsyncKeyState(key) & 0x8000);
-
-        private static List<GameController> GetControllers()
-        {
-            var count = SDL_NumJoysticks();
-            var controllers = new List<GameController>(count);
-            for (var i = 0; i < count; i++)
-            {
-                if (SDL_IsGameController(i) != SDL_bool.SDL_TRUE) continue;
-                controllers.Add(new GameController(i));
-            }
-            return controllers;
-        }
-
-        private static bool AControllerChanged(List<GameController> controllers)
-        {
-            while (SDL_PollEvent(out var sdlEv) == 1)
-            {
-                var index = sdlEv.cdevice.which;
-                switch (sdlEv.type)
-                {
-                    case SDL_EventType.SDL_CONTROLLERDEVICEADDED:
-                        if (controllers.All(c => c.InstanceId != index))
-                        {
-                            controllers.Add(new GameController(index));
-                        }
-                        break;
-                    case SDL_EventType.SDL_CONTROLLERDEVICEREMOVED:
-                        var controller = controllers.FirstOrDefault(c => c.InstanceId == index);
-                        if (controller != null)
-                        {
-                            controllers.Remove(controller);
-                        }
-                        break;
-                }
-            }
-
-            SDL_GameControllerUpdate();
-            return controllers.Where(c => c.ProcessState()).ToList().Any();
-        }
-
-        #endregion
-
-        #region PausePolling
-
-        private void Pause()
-        {
-            _isPolling = false;
-        }
-
-        #endregion
-
-        #region StopPolling
-
-        private void Stop()
-        {
-            UnhookWindowsHookEx(_hookID);
-            Pause();
-        }
-
-        #endregion
-
-        #region UpdateSettings
-
-        private void Update(ScreenSaverSettings settings)
-        {
-            _settings                =                                 settings;
-            _gameIntervalInMs        = _settings. GameTransitionInterval * 1000;
-            _screenSaverIntervalInMs = _settings.    ScreenSaverInterval * 1000;
-        }
-
-        #endregion
-
-        #endregion
     }
+
+    private void UpdateScreenSaverState(ref DateTime time)
+    {
+        var screenSaverIsNotRunning = _timeSinceStart is null;
+
+        if (screenSaverIsNotRunning && TimeToStart)
+        {
+            Process? process = null;
+            if (soundsLoaded)
+            {
+                process = Process.Start(App.SoundsUriPause);
+            }
+
+            Application.Current.Dispatcher.Invoke(screenSaverManager.StartScreenSaverAsync);
+            _timeSinceStart = Environment.TickCount + 100;
+            _lastScreenChangeTimeStampInMs = Environment.TickCount;
+            time = DateTime.Now;
+
+            if (soundsLoaded)
+            {
+                process!.WaitForExit();
+                process.Dispose();
+            }
+            
+        }
+        else if (_lastInputTimeStampInMs > _timeSinceStart)
+        {
+            Process? process = null;
+            if (soundsLoaded)
+            {
+                process = Process.Start(App.SoundsUriPlay);
+            }
+            _timeSinceStart = null;
+            Application.Current.Dispatcher.InvokeAsync(screenSaverManager.StopScreenSaver);
+
+            if (soundsLoaded)
+            {
+                process!.WaitForExit();
+                process.Dispose();
+            }
+        }
+        else if (!screenSaverIsNotRunning && TimeToUpdate)
+        {
+            _lastScreenChangeTimeStampInMs = Environment.TickCount;
+            Application.Current.Dispatcher.Invoke(screenSaverManager.UpdateScreenSaverAsync);
+            time = DateTime.Now;
+        }
+
+        var currentTime = DateTime.Now;
+        if (currentTime.Second is 0 && currentTime - time > TimeSpan.FromMinutes(1))
+        {
+            time = DateTime.Now;
+            Application.Current.Dispatcher.Invoke(screenSaverManager.UpdateScreenSaverTime);
+        }
+    }
+
+    private bool  TimeToStart => Environment.TickCount - _lastInputTimeStampInMs
+                               > Settings.ScreenSaverInterval * 1000;
+    private bool TimeToUpdate => Environment.TickCount - _lastScreenChangeTimeStampInMs
+                               > Settings.GameTransitionInterval * 1000;
+
+    // A keyboard hook would be better, but not necessary until we can find an event or hook for controllers
+    private bool AKeyStateChanged()
+    {
+        var keyChanged = false;
+
+        foreach (var key in _keys)
+        {
+            var keyState = _keyStates[key];
+            if (IsKeyPushedDown(key) != keyState)
+            {
+                _keyStates[key] = !keyState;
+                keyChanged = true;
+            }
+        }
+
+        return keyChanged;
+    }
+
+    public static bool IsKeyPushedDown(Keys key) => 0 != (GetAsyncKeyState(key) & 0x8000);
+
+    #endregion
+
+    #region PausePolling
+
+    private void Pause() => _isPolling = false;
+
+    #endregion
+
+    #region StopPolling
+
+    private void Stop()
+    {
+        if (_hookID != IntPtr.Zero) UnhookWindowsHookEx(_hookID);
+        Pause();
+    }
+
+    #endregion
+
+    #region OnButtonPress
+
+    public void OnButtonPress() => _lastInputTimeStampInMs = Environment.TickCount;
+
+    #endregion
+
+    #endregion
 }

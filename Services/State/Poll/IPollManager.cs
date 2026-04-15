@@ -1,10 +1,10 @@
-﻿namespace ScreenSaver.Services.State.Poll
+﻿namespace ScreenSaver.Services.State.Poll;
+
+internal interface IPollManager
 {
-    internal interface IPollManager : IScreenSaverSettings
-    {
-        void SetupPolling();
-        void StartPolling(bool immediately);
-        void PausePolling();
-        void StopPolling();
-    }
+    void SetupPolling();
+    void StartPolling(bool immediately);
+    void PausePolling();
+    void StopPolling();
+    void OnButtonPress();
 }
